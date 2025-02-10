@@ -1,4 +1,0 @@
-[build]
-  base = "secrets/secrets"
-  publish = "www"
-  command = "npm install && ionic build --prod"
