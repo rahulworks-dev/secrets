@@ -78,7 +78,7 @@ export class DashboardPage implements OnInit {
         this.folders = this.helperService.sortByTime(this.folders);
       }
     } catch (err) {
-      // this.toast.showErrorToast('')
+      this.toast.showErrorToast('Error Fetching Folders');
       console.log(err);
     }
   }
