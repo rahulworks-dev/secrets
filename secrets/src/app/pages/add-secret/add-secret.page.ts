@@ -14,7 +14,7 @@ import { ToastService } from 'src/app/services/toast.service';
   styleUrls: ['./add-secret.page.scss'],
   standalone: false,
 })
-export class AddSecretPage implements OnInit {
+export class AddSecretPage {
   vibrantColors = [
     '#007bff', // Electric Blue
     '#ff007f', // Neon Pink
@@ -44,7 +44,7 @@ export class AddSecretPage implements OnInit {
     private route: ActivatedRoute
   ) {}
 
-  async ngOnInit() {
+  async ionViewDidEnter() {
     this.loggedInUserDetails =
       await this.helperService.getLoggedInUserDetails();
     this.route.queryParams.subscribe((params) => {

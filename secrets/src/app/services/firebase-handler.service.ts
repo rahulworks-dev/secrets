@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import {
   addDoc,
   collection,
@@ -10,20 +10,21 @@ import {
   Timestamp,
   updateDoc,
 } from '@angular/fire/firestore';
-import { map, Observable } from 'rxjs';
+import { map, Observable, of } from 'rxjs';
 import { CryptoService } from './crypto.service';
 import { HelperService } from './helper.service';
+
 @Injectable({
   providedIn: 'root',
 })
 export class FirebaseHandlerService {
-  constructor(
-    private firestore: Firestore,
-    private cryptoService: CryptoService,
-    private helperService: HelperService
-  ) {}
+  private firestore = inject(Firestore);
+  private cryptoService = inject(CryptoService);
+  private helperService = inject(HelperService);
 
-  async create(data: any, collectionName: any): Promise<void> {
+  async create(data: any, collectionName: string): Promise<void> {
+    if (!this.firestore) return;
+
     if (collectionName === 'secrets') {
       data = {
         ...data,
@@ -34,55 +35,76 @@ export class FirebaseHandlerService {
     await addDoc(itemsCollection, data);
   }
 
-  readAll(collectionName: any): Observable<any[]> {
+  readAll(collectionName: string): Observable<any[]> {
+    if (!this.firestore) {
+      console.warn('Firestore is not initialized');
+      return of([]);
+    }
+
     const itemsCollection = collection(this.firestore, collectionName);
     return collectionData(itemsCollection, { idField: 'id' }).pipe(
       map((items) =>
         items.map((item) => {
-          if (item['createdOn'] instanceof Timestamp) {
-            item = { ...item, createdOn: item['createdOn'].toDate() };
+          let newItem = { ...item };
+
+          if (newItem['createdOn'] instanceof Timestamp) {
+            newItem['createdOn'] = newItem['createdOn'].toDate();
           }
-          if (item['secret']) {
-            item = {
-              ...item,
-              secret: this.cryptoService.decrypt(item['secret']),
-            };
+
+          if (newItem['secret']) {
+            newItem['secret'] = this.cryptoService.decrypt(newItem['secret']);
           }
-          return item;
+
+          return newItem;
         })
       )
     );
   }
 
-  getItemById(id: string, collectionName: any): Observable<any> {
+  getItemById(id: string, collectionName: string): Observable<any> {
+    if (!this.firestore) return of(null);
+
     const itemDoc = doc(this.firestore, `${collectionName}/${id}`);
     return docData(itemDoc, { idField: 'id' }).pipe(
       map((item: any) => {
         if (!item) return null;
-        if (item['secret']) {
-          return {
-            ...item,
-            secret: this.cryptoService.decrypt(item.secret),
-          };
-        } else {
-          return item;
+
+        let newItem = { ...item };
+
+        if (newItem['secret']) {
+          newItem['secret'] = this.cryptoService.decrypt(newItem.secret);
         }
+
+        if (newItem['createdOn'] instanceof Timestamp) {
+          newItem['createdOn'] = newItem['createdOn'].toDate();
+        }
+
+        return newItem;
       })
     );
   }
 
-  async updateItem(id: string, data: any, collectionName: any): Promise<void> {
+  async updateItem(
+    id: string,
+    data: any,
+    collectionName: string
+  ): Promise<void> {
+    if (!this.firestore) return;
+
     if (collectionName === 'secrets') {
       data = {
         ...data,
         secret: this.cryptoService.encrypt(data?.secret),
       };
     }
+
     const itemDoc = doc(this.firestore, `${collectionName}/${id}`);
     await updateDoc(itemDoc, data);
   }
 
-  async deleteItem(id: string, collectionName: any): Promise<void> {
+  async deleteItem(id: string, collectionName: string): Promise<void> {
+    if (!this.firestore) return;
+
     const itemDoc = doc(this.firestore, `${collectionName}/${id}`);
     await deleteDoc(itemDoc);
   }

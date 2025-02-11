@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { collection } from 'src/app/constants/secret.constant';
 import { FirebaseHandlerService } from 'src/app/services/firebase-handler.service';
 import { HelperService } from 'src/app/services/helper.service';
 import { LoaderService } from 'src/app/services/loader.service';
+import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
   selector: 'app-folders',
@@ -11,7 +12,7 @@ import { LoaderService } from 'src/app/services/loader.service';
   styleUrls: ['./folders.page.scss'],
   standalone: false,
 })
-export class FoldersPage implements OnInit {
+export class FoldersPage {
   vibrantColors = [
     '#007bff', // Electric Blue
     '#ff007f', // Neon Pink
@@ -22,20 +23,34 @@ export class FoldersPage implements OnInit {
   ];
   folders: any;
   loggedInUserDetails: any;
+  action: any;
+  secretId: any;
   constructor(
     private router: Router,
     private helperService: HelperService,
     private loaderService: LoaderService,
-    private firebaseHandlerService: FirebaseHandlerService
+    private firebaseHandlerService: FirebaseHandlerService,
+    private route: ActivatedRoute,
+    private toast: ToastService
   ) {}
 
-  async ngOnInit() {
+  async ionViewDidEnter() {
     this.loggedInUserDetails =
       await this.helperService.getLoggedInUserDetails();
     this.fetchFolders();
+    this.readActionFromURL();
+  }
+
+  readActionFromURL() {
+    this.route.queryParams.subscribe((param: any) => {
+      this.action = param['action'];
+      this.secretId = param['secretId'];
+      console.log(this.action);
+    });
   }
 
   async fetchFolders() {
+    console.log('HI');
     try {
       this.folders = await this.readAllFolders();
       console.log('this.folders: ', this.folders);
@@ -71,5 +86,58 @@ export class FoldersPage implements OnInit {
     // this.secrets = this.originalSecrets;
     // this.revealText = 'Reveal All';
     this.router.navigateByUrl('/add-secret');
+  }
+
+  onSelectingFolder(folder: any) {
+    console.log('folder: ', folder);
+    if (this.secretId) {
+      console.log(this.secretId);
+      console.log(folder.secrets.includes(this.secretId));
+      if (folder.secrets.includes(this.secretId)) {
+        this.toast.showErrorToast('You cannot move to the same folder!');
+        return;
+      }
+
+      const payload = {
+        ...folder,
+        secrets: [...folder.secrets, this.secretId],
+      };
+
+      this.loaderService.show();
+      this.firebaseHandlerService
+        .updateItem(folder?.id, payload, collection.FOLDERS)
+        .then(() => {
+          this.loaderService.hide();
+          this.toast.showSuccessToast(
+            'Successfully Moved to ' + folder?.folderName
+          );
+          this.router.navigateByUrl('/secrets?folderId=' + folder?.id);
+          // this.updateFolderIdInSecret(folder);
+        })
+        .catch((err) => {
+          this.loaderService.hide();
+          console.error('Error Moving secrets to destination folder', err);
+        });
+    } else {
+      this.loaderService.hide();
+      this.router.navigateByUrl('/secrets?folderId=' + folder?.id);
+    }
+  }
+
+  updateFolderIdInSecret(folder: any) {
+    const payload = {
+      folderId: folder.id,
+    };
+    this.firebaseHandlerService
+      .updateItem(this.secretId, payload, collection.SECRETS)
+      .then(() => {
+        this.toast.showSuccessToast(
+          'Successfully Moved to ' + folder?.folderName
+        );
+        this.router.navigateByUrl('/secrets?folderId=' + folder?.id);
+      })
+      .catch((err) => {
+        console.error('Error Moving secrets to destination folder', err);
+      });
   }
 }

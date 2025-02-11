@@ -14,12 +14,11 @@ import { ToastService } from 'src/app/services/toast.service';
   styleUrls: ['./dashboard.page.scss'],
   standalone: false,
 })
-export class DashboardPage implements OnInit {
+export class DashboardPage {
   secrets: any;
   revealText = 'Reveal All';
   isModalOpen = false;
   folderName: any;
-  isRevealed = false;
   loggedInUserDetails: any;
   folders: any;
   hasNoSecrets = false;
@@ -33,44 +32,47 @@ export class DashboardPage implements OnInit {
     private alertCtrl: AlertController
   ) {}
 
-  async ionViewWillEnter() {
-    this.isRevealed = false;
+  async ionViewDidEnter() {
+    console.log('ION VIEW DID ENTER');
     this.loggedInUserDetails =
       await this.helperService.getLoggedInUserDetails();
     this.fetchSecrets();
     this.fetchFolders();
   }
 
-  async ngOnInit() {}
-
   fetchSecrets() {
+    console.log('FETCHING SECRETS');
     if (this.loggedInUserDetails) {
       this.loaderService.show();
       this.firebaseHandlerService.readAll(collection.SECRETS).subscribe({
         next: (resp) => {
-          console.log('resp: ', resp);
           this.loaderService.hide();
           if (resp?.length > 0) {
             this.hasNoSecrets = false;
             this.secrets = resp.filter(
               (item: any) => item?.userId == this.loggedInUserDetails.id
             );
-            this.secrets = this.helperService.sortByTime(this.secrets);
-            console.log(this.secrets);
+            if (this.secrets.length > 0) {
+              this.secrets = this.helperService.sortByTime(this.secrets);
+            } else {
+              this.hasNoSecrets = true;
+            }
           } else {
             this.hasNoSecrets = true;
+            this.secrets = [];
           }
         },
       });
     } else {
       this.toast.showErrorToast('Logged-In User Details Not Found');
+      this.secrets = [];
     }
   }
 
   async fetchFolders() {
+    console.log('FETCHING FOLDERS');
     try {
       this.folders = await this.readAllFolders();
-      console.log('this.folders: ', this.folders);
       if (this.folders.length > 0) {
         this.folders = this.folders.filter(
           (item: any) => item.userId === this.loggedInUserDetails.id
@@ -81,10 +83,6 @@ export class DashboardPage implements OnInit {
       this.toast.showErrorToast('Error Fetching Folders');
       console.log(err);
     }
-  }
-
-  onReveal() {
-    this.isRevealed = !this.isRevealed;
   }
 
   onCopy(textToCopy: any) {
@@ -113,7 +111,6 @@ export class DashboardPage implements OnInit {
         {
           text: 'Add Secret',
           handler: () => {
-            this.isRevealed = false;
             this.router.navigateByUrl('/add-secret');
           },
         },
@@ -195,8 +192,11 @@ export class DashboardPage implements OnInit {
 
   async checkIfFolderNameIsAlreadyPresent() {
     try {
-      const folders = await this.readAllFolders();
+      let folders = await this.readAllFolders();
       if (folders.length > 0) {
+        folders = folders.filter(
+          (item: any) => item.userId === this.loggedInUserDetails.id
+        );
         const isFolderNameAlreadyPresent = folders.find(
           (item: any) =>
             item.folderName.toLowerCase() == this.folderName.toLowerCase()
@@ -222,48 +222,7 @@ export class DashboardPage implements OnInit {
     return vibrantColors[randomIndex];
   }
 
-  onEdit(secretId: any) {
-    if (secretId) {
-      this.router.navigateByUrl('/add-secret?id=' + secretId);
-    } else {
-      this.toast.showErrorToast('System Error, Could not initiate Edit Action');
-    }
-  }
-
-  async onDelete(secretId: any) {
-    const alert = await this.alertCtrl.create({
-      header: 'Delete Secret',
-      subHeader: 'This action cannot be undone!',
-      message: 'Are you sure you want to delete this secret ?',
-      cssClass: 'custom-alert',
-      buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel',
-          cssClass: 'alert-button-cancel',
-          handler: () => {
-            console.log('Alert canceled');
-          },
-        },
-        {
-          text: 'Yes',
-          role: 'confirm',
-          cssClass: 'alert-button-confirm',
-          handler: () => {
-            console.log('Alert confirmed');
-            this.firebaseHandlerService
-              .deleteItem(secretId, collection.SECRETS)
-              .then(() => {
-                this.toast.showSuccessToast('Deleted Successfully');
-              })
-              .catch((err) => {
-                console.error('Error copying text', err);
-              });
-          },
-        },
-      ],
-    });
-
-    await alert.present();
+  openFolder(id: any) {
+    this.router.navigateByUrl('/secrets?folderId=' + id);
   }
 }

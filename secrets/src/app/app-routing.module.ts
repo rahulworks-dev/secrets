@@ -35,6 +35,10 @@ const routes: Routes = [
     loadChildren: () =>
       import('./pages/folders/folders.module').then((m) => m.FoldersPageModule),
   },
+  {
+    path: 'secrets',
+    loadChildren: () => import('./pages/secrets/secrets.module').then( m => m.SecretsPageModule)
+  },
 ];
 
 @NgModule({

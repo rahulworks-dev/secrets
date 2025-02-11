@@ -4,9 +4,9 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { DashboardPageRoutingModule } from './dashboard-routing.module';
+import { SecretsPageRoutingModule } from './secrets-routing.module';
 
-import { DashboardPage } from './dashboard.page';
+import { SecretsPage } from './secrets.page';
 import { SharedModule } from 'src/app/shared/shared.module';
 
 @NgModule({
@@ -14,9 +14,9 @@ import { SharedModule } from 'src/app/shared/shared.module';
     CommonModule,
     FormsModule,
     IonicModule,
-    DashboardPageRoutingModule,
+    SecretsPageRoutingModule,
     SharedModule
   ],
-  declarations: [DashboardPage]
+  declarations: [SecretsPage]
 })
-export class DashboardPageModule {}
+export class SecretsPageModule {}
