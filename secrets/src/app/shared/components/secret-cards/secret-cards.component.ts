@@ -40,7 +40,7 @@ export class SecretCardsComponent implements OnInit {
 
   onEdit(secretId: any) {
     if (secretId) {
-      this.router.navigateByUrl('/add-secret?id=' + secretId);
+      this.router.navigateByUrl('/edit-secret?id=' + secretId);
     } else {
       this.toast.showErrorToast('System Error, Could not initiate Edit Action');
     }
@@ -101,7 +101,7 @@ export class SecretCardsComponent implements OnInit {
           text: 'Move',
           handler: () => {
             this.router.navigateByUrl(
-              '/folders?action=move&secretId=' + secretId
+              '/move-to?action=move&secretId=' + secretId
             );
           },
         },

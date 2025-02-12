@@ -23,6 +23,14 @@ const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
+    path: 'edit-secret',
+    loadChildren: () =>
+      import('./pages/add-secret/add-secret.module').then(
+        (m) => m.AddSecretPageModule
+      ),
+    canActivate: [AuthGuard],
+  },
+  {
     path: 'dashboard',
     loadChildren: () =>
       import('./pages/dashboard/dashboard.module').then(
@@ -31,13 +39,19 @@ const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
-    path: 'folders',
+    path: 'my-folders',
     loadChildren: () =>
       import('./pages/folders/folders.module').then((m) => m.FoldersPageModule),
   },
   {
-    path: 'secrets',
-    loadChildren: () => import('./pages/secrets/secrets.module').then( m => m.SecretsPageModule)
+    path: 'move-to',
+    loadChildren: () =>
+      import('./pages/folders/folders.module').then((m) => m.FoldersPageModule),
+  },
+  {
+    path: 'folder',
+    loadChildren: () =>
+      import('./pages/secrets/secrets.module').then((m) => m.SecretsPageModule),
   },
 ];
 

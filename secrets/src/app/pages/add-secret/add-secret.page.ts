@@ -79,7 +79,9 @@ export class AddSecretPage {
           this.saveFreshRecord();
         }
       } else {
-        this.toast.showErrorToast('Kindly fill out the form before submitting');
+        this.toast.showErrorToast(
+          "Oops! Looks like you haven't added your secret, Please fill out the required fields"
+        );
       }
     } else {
       this.toast.showErrorToast(

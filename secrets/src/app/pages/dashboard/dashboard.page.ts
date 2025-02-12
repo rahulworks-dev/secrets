@@ -33,7 +33,6 @@ export class DashboardPage {
   ) {}
 
   async ionViewDidEnter() {
-    console.log('ION VIEW DID ENTER');
     this.loggedInUserDetails =
       await this.helperService.getLoggedInUserDetails();
     this.fetchSecrets();
@@ -70,7 +69,6 @@ export class DashboardPage {
   }
 
   async fetchFolders() {
-    console.log('FETCHING FOLDERS');
     try {
       this.folders = await this.readAllFolders();
       if (this.folders.length > 0) {
@@ -78,6 +76,15 @@ export class DashboardPage {
           (item: any) => item.userId === this.loggedInUserDetails.id
         );
         this.folders = this.helperService.sortByTime(this.folders);
+        this.folders = this.folders.map((item: any) => {
+          return {
+            ...item,
+            folderName:
+              item?.folderName?.length > 15
+                ? item?.folderName.substring(0, 15) + '...'
+                : item?.folderName,
+          };
+        });
       }
     } catch (err) {
       this.toast.showErrorToast('Error Fetching Folders');
@@ -133,8 +140,11 @@ export class DashboardPage {
   }
 
   async onFolderCreation() {
+    this.folderName = this.folderName ? this.folderName.trim() : '';
     if (this.folderName) {
-      if (!/^[A-Za-z0-9 ]+$/.test(this.folderName)) {
+      if (this.folderName.length > 20) {
+        this.toast.showErrorToast('Folder Name cannot exceed 15 Characters');
+      } else if (!/^[A-Za-z0-9 ]+$/.test(this.folderName)) {
         this.toast.showErrorToast('Username cannot contain special characters');
       } else if (await this.checkIfFolderNameIsAlreadyPresent()) {
         this.toast.showErrorToast(
@@ -222,7 +232,8 @@ export class DashboardPage {
     return vibrantColors[randomIndex];
   }
 
-  openFolder(id: any) {
-    this.router.navigateByUrl('/secrets?folderId=' + id);
+  openFolder(folder: any) {
+    const URL = `/folder?folderId=${folder?.id}&name=${folder?.folderName}`;
+    this.router.navigateByUrl(URL);
   }
 }

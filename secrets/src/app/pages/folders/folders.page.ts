@@ -111,7 +111,8 @@ export class FoldersPage {
           this.toast.showSuccessToast(
             'Successfully Moved to ' + folder?.folderName
           );
-          this.router.navigateByUrl('/secrets?folderId=' + folder?.id);
+          const URL = `/folder?folderId=${folder?.id}&name=${folder?.folderName}`;
+          this.router.navigateByUrl(URL);
           // this.updateFolderIdInSecret(folder);
         })
         .catch((err) => {
@@ -120,7 +121,8 @@ export class FoldersPage {
         });
     } else {
       this.loaderService.hide();
-      this.router.navigateByUrl('/secrets?folderId=' + folder?.id);
+      const URL = `/folder?folderId=${folder?.id}&name=${folder?.folderName}`;
+      this.router.navigateByUrl(URL);
     }
   }
 
@@ -134,7 +136,8 @@ export class FoldersPage {
         this.toast.showSuccessToast(
           'Successfully Moved to ' + folder?.folderName
         );
-        this.router.navigateByUrl('/secrets?folderId=' + folder?.id);
+        const URL = `/folder?folderId=${folder?.id}&name=${folder?.folderName}`;
+        this.router.navigateByUrl(URL);
       })
       .catch((err) => {
         console.error('Error Moving secrets to destination folder', err);
