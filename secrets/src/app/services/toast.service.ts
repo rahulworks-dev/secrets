@@ -30,4 +30,16 @@ export class ToastService {
 
     await toast.present();
   }
+
+  async showInfoToast(message: any) {
+    const toast = await this.toastController.create({
+      message: message,
+      duration: 2500,
+      color: 'warning',
+      icon: 'information-circle',
+      position: 'top',
+    });
+
+    await toast.present();
+  }
 }

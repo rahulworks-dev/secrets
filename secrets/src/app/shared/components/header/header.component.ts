@@ -14,7 +14,8 @@ import { StorageService } from 'src/app/services/storage.service';
 })
 export class HeaderComponent implements OnInit {
   isLoading = this.loaderService.isLoading$;
-  heroText: any;
+  heroText: any = '';
+  enableDom:any;
   constructor(
     private loaderService: LoaderService,
     private helperService: HelperService,
@@ -32,6 +33,11 @@ export class HeaderComponent implements OnInit {
 
   ngOnInit() {
     console.log('HI');
+    this.enableDom = true;
+  }
+
+  ionViewDidEnter(){
+    
   }
 
   async GoToDashboard() {

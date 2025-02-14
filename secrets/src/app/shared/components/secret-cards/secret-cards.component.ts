@@ -1,8 +1,10 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { arrayRemove } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { ActionSheetController, AlertController } from '@ionic/angular';
 import { collection } from 'src/app/constants/secret.constant';
 import { FirebaseHandlerService } from 'src/app/services/firebase-handler.service';
+import { IntermediateService } from 'src/app/services/intermediate.service';
 import { LoaderService } from 'src/app/services/loader.service';
 import { ToastService } from 'src/app/services/toast.service';
 
@@ -24,13 +26,13 @@ export class SecretCardsComponent implements OnInit {
     private toast: ToastService,
     private alertCtrl: AlertController,
     private firebaseHandlerService: FirebaseHandlerService,
-    private actionSheet: ActionSheetController
+    private actionSheet: ActionSheetController,
+    private intermediateService: IntermediateService
   ) {}
 
   ngOnInit() {}
 
   ngOnChanges() {
-    // console.log(this.secrets);
     this.isRevealed = false;
   }
 
@@ -39,6 +41,12 @@ export class SecretCardsComponent implements OnInit {
   }
 
   onEdit(secretId: any) {
+    if (!this.isRevealed) {
+      this.toast.showInfoToast(
+        'We recommend revealing the secret before performing any actions to ensure they are executed correctly.'
+      );
+      return;
+    }
     if (secretId) {
       this.router.navigateByUrl('/edit-secret?id=' + secretId);
     } else {
@@ -46,11 +54,79 @@ export class SecretCardsComponent implements OnInit {
     }
   }
 
-  async onDelete(secretId: any) {
+  async onDelete(secret: any) {
+    console.log(this.router.url);
+    if (this.router.url.includes('folder')) {
+      this.showActionSheet(secret);
+    } else {
+      this.showDeleteAlert(secret);
+    }
+  }
+
+  async showActionSheet(secret: any) {
+    if (!this.isRevealed) {
+      this.toast.showInfoToast(
+        'We recommend revealing the secret before performing any actions to ensure they are executed correctly.'
+      );
+      return;
+    }
+    const actionSheet = await this.actionSheet.create({
+      header:
+        'Do you want to delete this secret permanently or remove it from this folder?',
+      buttons: [
+        {
+          text: 'Remove from Folder',
+          handler: () => {
+            this.removeFolderIdFromSecret(secret);
+          },
+        },
+        {
+          text: 'Delete',
+          handler: () => {
+            this.deleteSecret(secret);
+          },
+        },
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          data: {
+            action: 'cancel',
+          },
+        },
+      ],
+      cssClass: ['custom-action-sheet', 'need-header'],
+    });
+
+    await actionSheet.present();
+  }
+
+  removeFolderIdFromSecret(secret: any) {
+    const payload = {
+      folderId: '',
+    };
+    this.intermediateService
+      .update(secret?.id, payload, collection.SECRETS)
+      .subscribe({
+        next: () => {
+          this.removeSecretIdInFolderAsWell(
+            secret,
+            'Successfully removed from this folder ! You can still find it in Dashboard'
+          );
+        },
+      });
+  }
+
+  async showDeleteAlert(secret: any) {
+    if (!this.isRevealed) {
+      this.toast.showInfoToast(
+        'We recommend revealing the secret before performing any actions to ensure they are executed correctly.'
+      );
+      return;
+    }
     const alert = await this.alertCtrl.create({
       header: 'Delete Secret',
       subHeader: 'This action cannot be undone!',
-      message: 'Are you sure you want to delete this secret ?',
+      message: 'Are you sure you want to delete this secret permanently ?',
       cssClass: 'custom-alert',
       buttons: [
         {
@@ -67,7 +143,7 @@ export class SecretCardsComponent implements OnInit {
           cssClass: 'alert-button-confirm',
           handler: () => {
             console.log('Alert confirmed');
-            this.deleteSecret(secretId);
+            this.deleteSecret(secret);
           },
         },
       ],
@@ -76,16 +152,16 @@ export class SecretCardsComponent implements OnInit {
     await alert.present();
   }
 
-  async deleteSecret(secretId: string) {
-    console.log('delete');
+  async deleteSecret(secret: any) {
     this.loaderService.show();
-
     try {
       await this.firebaseHandlerService.deleteItem(
-        secretId,
+        secret?.id,
         collection.SECRETS
       );
-      this.toast.showSuccessToast('Deleted Successfully');
+      if (secret?.folderId) {
+        this.removeSecretIdInFolderAsWell(secret);
+      }
     } catch (err) {
       console.error('Error deleting item', err);
     } finally {
@@ -93,16 +169,45 @@ export class SecretCardsComponent implements OnInit {
     }
   }
 
-  async on3Dots(secretId: any) {
+  removeSecretIdInFolderAsWell(
+    secret: any,
+    customErrorMsg = 'Deleted Successfully'
+  ) {
+    const payload = {
+      secrets: arrayRemove(secret?.id),
+    };
+    this.intermediateService
+      .update(secret?.folderId, payload, collection.FOLDERS)
+      .subscribe({
+        next: () => {
+          this.loaderService.hide();
+          this.toast.showSuccessToast(customErrorMsg);
+        },
+        error: () => {
+          this.loaderService.hide();
+          this.toast.showErrorToast('Partially Deleted');
+        },
+      });
+  }
+
+  async on3Dots(secret: any) {
+    if (!this.isRevealed) {
+      this.toast.showInfoToast(
+        'We recommend revealing the secret before performing any actions to ensure they are executed correctly.'
+      );
+      return;
+    }
     const actionSheet = await this.actionSheet.create({
       header: '',
       buttons: [
         {
           text: 'Move',
           handler: () => {
-            this.router.navigateByUrl(
-              '/move-to?action=move&secretId=' + secretId
-            );
+            let url = `/move-to?action=move&secretId=${secret?.id}`;
+            if (secret?.folderId) {
+              url += `&existingFolderId=${secret.folderId}`;
+            }
+            this.router.navigateByUrl(url);
           },
         },
         {

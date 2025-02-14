@@ -3,8 +3,10 @@ import { Router } from '@angular/router';
 import { ActionSheetController, AlertController } from '@ionic/angular';
 import { collection } from 'src/app/constants/secret.constant';
 import { vibrantColors } from 'src/app/data/static-data';
+import { Folder } from 'src/app/models/secret.interface';
 import { FirebaseHandlerService } from 'src/app/services/firebase-handler.service';
 import { HelperService } from 'src/app/services/helper.service';
+import { IntermediateService } from 'src/app/services/intermediate.service';
 import { LoaderService } from 'src/app/services/loader.service';
 import { ToastService } from 'src/app/services/toast.service';
 
@@ -15,7 +17,7 @@ import { ToastService } from 'src/app/services/toast.service';
   standalone: false,
 })
 export class DashboardPage {
-  secrets: any;
+  secrets: any = [];
   revealText = 'Reveal All';
   isModalOpen = false;
   folderName: any;
@@ -24,6 +26,7 @@ export class DashboardPage {
   hasNoSecrets = false;
   constructor(
     private firebaseHandlerService: FirebaseHandlerService,
+    private intermediateService: IntermediateService,
     private router: Router,
     private toast: ToastService,
     private actionSheet: ActionSheetController,
@@ -33,6 +36,7 @@ export class DashboardPage {
   ) {}
 
   async ionViewDidEnter() {
+    console.log('DASHBOARD');
     this.loggedInUserDetails =
       await this.helperService.getLoggedInUserDetails();
     this.fetchSecrets();
@@ -40,26 +44,23 @@ export class DashboardPage {
   }
 
   fetchSecrets() {
-    console.log('FETCHING SECRETS');
     if (this.loggedInUserDetails) {
       this.loaderService.show();
-      this.firebaseHandlerService.readAll(collection.SECRETS).subscribe({
+      this.intermediateService.readAll(collection.SECRETS).subscribe({
         next: (resp) => {
+          console.log('resp: ', resp);
           this.loaderService.hide();
           if (resp?.length > 0) {
-            this.hasNoSecrets = false;
-            this.secrets = resp.filter(
-              (item: any) => item?.userId == this.loggedInUserDetails.id
-            );
-            if (this.secrets.length > 0) {
-              this.secrets = this.helperService.sortByTime(this.secrets);
-            } else {
-              this.hasNoSecrets = true;
-            }
+            this.secrets = resp;
+            this.secrets = this.helperService.sortByTime(this.secrets);
           } else {
-            this.hasNoSecrets = true;
             this.secrets = [];
           }
+        },
+        error: (e) => {
+          this.toast.showErrorToast(
+            'Error Fetching Your Secrets, Please try again later'
+          );
         },
       });
     } else {
@@ -76,15 +77,15 @@ export class DashboardPage {
           (item: any) => item.userId === this.loggedInUserDetails.id
         );
         this.folders = this.helperService.sortByTime(this.folders);
-        this.folders = this.folders.map((item: any) => {
-          return {
-            ...item,
-            folderName:
-              item?.folderName?.length > 15
-                ? item?.folderName.substring(0, 15) + '...'
-                : item?.folderName,
-          };
-        });
+        // this.folders = this.folders.map((item: any) => {
+        //   return {
+        //     ...item,
+        //     folderName:
+        //       item?.folderName?.length > 10
+        //         ? item?.folderName.substring(0, 10) + '...'
+        //         : item?.folderName,
+        //   };
+        // });
       }
     } catch (err) {
       this.toast.showErrorToast('Error Fetching Folders');
@@ -139,55 +140,10 @@ export class DashboardPage {
     this.isModalOpen = isOpen;
   }
 
-  async onFolderCreation() {
-    this.folderName = this.folderName ? this.folderName.trim() : '';
-    if (this.folderName) {
-      if (this.folderName.length > 20) {
-        this.toast.showErrorToast('Folder Name cannot exceed 15 Characters');
-      } else if (!/^[A-Za-z0-9 ]+$/.test(this.folderName)) {
-        this.toast.showErrorToast('Username cannot contain special characters');
-      } else if (await this.checkIfFolderNameIsAlreadyPresent()) {
-        this.toast.showErrorToast(
-          `Folder with name '${this.folderName}' is already present, Please enter different Folder name`
-        );
-      } else {
-        if (this.loggedInUserDetails) {
-          const payload = {
-            userId: this.loggedInUserDetails?.id,
-            folderName: this.folderName,
-            folderColor: this.getRandomColor(),
-            secrets: [],
-            createdOn: new Date(),
-          };
-          this.loaderService.show();
-          this.firebaseHandlerService
-            .create(payload, collection.FOLDERS)
-            .then(() => {
-              this.loaderService.hide();
-              this.toast.showSuccessToast('Successfully Created New Folder');
-              this.setOpenModal(false);
-              this.folderName = '';
-              this.fetchFolders();
-            })
-            .catch((error) => {
-              this.toast.showErrorToast('Something Went Wrong!');
-              this.loaderService.hide();
-            });
-        } else {
-          this.toast.showErrorToast(
-            'Logged-in User details Not found, Folder cannot be created'
-          );
-        }
-      }
-    } else {
-      this.toast.showErrorToast('Please Enter Folder Name');
-    }
-  }
-
   readAllFolders(): Promise<any> {
     this.loaderService.show();
     return new Promise((resolve, reject) => {
-      this.firebaseHandlerService.readAll(collection.FOLDERS).subscribe({
+      this.intermediateService.readAll(collection.FOLDERS).subscribe({
         next: (resp) => {
           this.loaderService.hide();
           resolve(resp);
@@ -200,36 +156,8 @@ export class DashboardPage {
     });
   }
 
-  async checkIfFolderNameIsAlreadyPresent() {
-    try {
-      let folders = await this.readAllFolders();
-      if (folders.length > 0) {
-        folders = folders.filter(
-          (item: any) => item.userId === this.loggedInUserDetails.id
-        );
-        const isFolderNameAlreadyPresent = folders.find(
-          (item: any) =>
-            item.folderName.toLowerCase() == this.folderName.toLowerCase()
-        );
-        if (isFolderNameAlreadyPresent) {
-          return true;
-        }
-      } else {
-        return false;
-      }
-    } catch (err) {
-      return false;
-    }
-    return false;
-  }
-
   onWillDismiss(eve: any) {
     this.setOpenModal(false);
-  }
-
-  getRandomColor() {
-    const randomIndex = Math.floor(Math.random() * vibrantColors.length);
-    return vibrantColors[randomIndex];
   }
 
   openFolder(folder: any) {

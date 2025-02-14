@@ -8,6 +8,7 @@ import {
   storage,
 } from 'src/app/constants/secret.constant';
 import { FirebaseHandlerService } from 'src/app/services/firebase-handler.service';
+import { IntermediateService } from 'src/app/services/intermediate.service';
 import { LoaderService } from 'src/app/services/loader.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { ToastService } from 'src/app/services/toast.service';
@@ -46,6 +47,7 @@ export class LoginPage implements OnInit {
   constructor(
     private router: Router,
     private firebaseHandlerService: FirebaseHandlerService,
+    private intermediateService: IntermediateService,
     private toast: ToastService,
     private loaderService: LoaderService,
     private storageService: StorageService
@@ -71,10 +73,12 @@ export class LoginPage implements OnInit {
           this.toast.showErrorToast('Either Username or Password is incorrect');
         }
       }
+      else{
+        console.log('Returned Empty Array For Some reason');
+      }
     } catch (error) {
-      this.toast.showErrorToast(
-        'We Could not reach server to verify you, Sorry, Please try again!'
-      );
+      console.log(error);
+      this.toast.showErrorToast('Something went wrong!');
     }
   }
 
@@ -109,6 +113,7 @@ export class LoginPage implements OnInit {
     } catch (error) {
       this.showSpinner = false;
       this.isUserNameValid = false;
+      console.log(error);
       this.toast.showErrorToast(
         "Username Availability couldn't be checked due to some technical issue, Please try again later"
       );
@@ -118,8 +123,9 @@ export class LoginPage implements OnInit {
   readAllUsers(): Promise<any> {
     this.loaderService.show();
     return new Promise((resolve, reject) => {
-      this.firebaseHandlerService.readAll(collection.USERS).subscribe({
+      this.intermediateService.readAll(collection.USERS).subscribe({
         next: (resp) => {
+          console.log('resp: ', resp);
           this.loaderService.hide();
           resolve(resp);
         },
@@ -138,15 +144,21 @@ export class LoginPage implements OnInit {
         password: this.password,
       };
       this.loaderService.show();
-      this.firebaseHandlerService
-        .create(data, collection.USERS)
-        .then(() => {
+      this.intermediateService.create(data, collection.USERS).subscribe({
+        next: (resp) => {
+          this.toast.showSuccessToast(
+            'Successful Registeration, Please login now'
+          );
           this.loaderService.hide();
-        })
-        .catch((error) => {
+          this.toggle();
+        },
+        error: (err) => {
+          this.toast.showSuccessToast(
+            'UnSuccessful Registeration, Please try again'
+          );
           this.loaderService.hide();
-        });
-      this.toggle();
+        },
+      });
     }
   }
 

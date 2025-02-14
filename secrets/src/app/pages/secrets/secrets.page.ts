@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ActionSheetController } from '@ionic/angular';
 import { distinctUntilChanged } from 'rxjs';
 import { collection } from 'src/app/constants/secret.constant';
 import { FirebaseHandlerService } from 'src/app/services/firebase-handler.service';
 import { HelperService } from 'src/app/services/helper.service';
+import { IntermediateService } from 'src/app/services/intermediate.service';
 import { LoaderService } from 'src/app/services/loader.service';
 import { ToastService } from 'src/app/services/toast.service';
 
@@ -24,7 +26,10 @@ export class SecretsPage {
     private firebaseHandlerService: FirebaseHandlerService,
     private helperService: HelperService,
     private loaderService: LoaderService,
-    private toast: ToastService
+    private toast: ToastService,
+    private intermediateService: IntermediateService,
+    private actionSheet: ActionSheetController,
+    private router: Router
   ) {}
 
   async ionViewDidEnter() {
@@ -48,38 +53,38 @@ export class SecretsPage {
   }
 
   getSelectedFolderDetails() {
-    this.firebaseHandlerService
-      .getItemById(this.folderId, collection.FOLDERS)
+    this.intermediateService
+      .readById(this.folderId, collection.FOLDERS)
       .subscribe({
         next: (resp) => {
           this.folderDetails = resp;
           this.getSecrets(resp?.secrets);
           console.log(resp);
         },
+        error: () => {
+          this.toast.showErrorToast(
+            'Error Fetching Your Folder, Please try again later'
+          );
+        },
       });
   }
 
   getSecrets(secrets: any) {
-    if (secrets.length < 1) {
+    if (secrets?.length < 1) {
       this.secretsList = [];
       return;
     }
     if (this.loggedInUserDetails) {
       this.secretsList = [];
       this.loaderService.show();
-      this.firebaseHandlerService.readAll(collection.SECRETS).subscribe({
+      this.intermediateService.readAll(collection.SECRETS).subscribe({
         next: (resp) => {
-          console.log('resp: ', resp);
           this.loaderService.hide();
           if (resp?.length > 0) {
-            this.secretsList = resp.filter(
-              (item: any) =>
-                
-                this.folderDetails.secrets.includes(item.id)
+            this.secretsList = resp.filter((item: any) =>
+              this.folderDetails.secrets.includes(item.id)
             );
-            // this.secretsList
             this.secretsList = this.helperService.sortByTime(this.secretsList);
-            console.log(this.secretsList);
           } else {
             this.secretsList = [];
           }
@@ -89,5 +94,29 @@ export class SecretsPage {
       this.secretsList = [];
       this.toast.showErrorToast('Logged-In User Details Not Found');
     }
+  }
+
+  async onAdd() {
+    const actionSheet = await this.actionSheet.create({
+      header: '',
+      buttons: [
+        {
+          text: 'Add Secret',
+          handler: () => {
+            this.router.navigateByUrl('/add-secret?folderId=' + this.folderId);
+          },
+        },
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          data: {
+            action: 'cancel',
+          },
+        },
+      ],
+      cssClass: 'custom-action-sheet',
+    });
+
+    await actionSheet.present();
   }
 }

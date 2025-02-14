@@ -7,13 +7,15 @@ import { IonicModule } from '@ionic/angular';
 import { FoldersPageRoutingModule } from './folders-routing.module';
 
 import { FoldersPage } from './folders.page';
+import { SharedModule } from 'src/app/shared/shared.module';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    FoldersPageRoutingModule
+    FoldersPageRoutingModule,
+    SharedModule
   ],
   declarations: [FoldersPage]
 })

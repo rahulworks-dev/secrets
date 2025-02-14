@@ -5,14 +5,13 @@
 export const environment = {
   production: false,
   firebaseConfig: {
-    apiKey: 'AIzaSyCs7mnNUO9v7bDAeey83ZCQ7MKlCQd4fws',
-    authDomain: 'mrcipher-f4d92.firebaseapp.com',
-    databaseURL: 'https://mrcipher-f4d92-default-rtdb.firebaseio.com',
-    projectId: 'mrcipher-f4d92',
-    storageBucket: 'mrcipher-f4d92.firebasestorage.app',
-    messagingSenderId: '987953665155',
-    appId: '1:987953665155:web:8031e0ea38d5dfe00877b6',
-    measurementId: 'G-3YVELC9L8K',
+    apiKey: "AIzaSyBKKb5h-lOISsvR8Ur18PsruFPa5bPCEq8",
+    authDomain: "secrets-2d274.firebaseapp.com",
+    projectId: "secrets-2d274",
+    storageBucket: "secrets-2d274.firebasestorage.app",
+    messagingSenderId: "56397462806",
+    appId: "1:56397462806:web:c2b8d413666da391036437",
+    measurementId: "G-9YMQJ4N6GC"
   },
 };
 
