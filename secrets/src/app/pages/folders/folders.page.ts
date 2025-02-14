@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { arrayRemove } from '@angular/fire/firestore';
+import { Component, inject, OnInit } from '@angular/core';
+import { arrayRemove, doc, Firestore, getDoc } from '@angular/fire/firestore';
 import { ActivatedRoute, Router } from '@angular/router';
 import { collection } from 'src/app/constants/secret.constant';
 import { FirebaseHandlerService } from 'src/app/services/firebase-handler.service';
@@ -15,14 +15,7 @@ import { ToastService } from 'src/app/services/toast.service';
   standalone: false,
 })
 export class FoldersPage {
-  vibrantColors = [
-    '#007bff', // Electric Blue
-    '#ff007f', // Neon Pink
-    '#32ff7e', // Lime Green
-    '#ff5733', // Sunset Orange
-    '#ffcc00', // Bright Yellow
-    '#9b59b6', // Purple Vibe
-  ];
+  private firestore = inject(Firestore);
   folders: any;
   loggedInUserDetails: any;
   action: any;
@@ -33,7 +26,6 @@ export class FoldersPage {
     private router: Router,
     private helperService: HelperService,
     private loaderService: LoaderService,
-    private firebaseHandlerService: FirebaseHandlerService,
     private intermediateService: IntermediateService,
     private route: ActivatedRoute,
     private toast: ToastService
@@ -51,33 +43,19 @@ export class FoldersPage {
       this.action = param['action'];
       this.secretId = param['secretId'];
       this.existingFolderId = param['existingFolderId'];
-      console.log(this.action);
     });
   }
 
   async fetchFolders() {
     try {
       this.folders = await this.readAllFolders();
-      console.log('this.folders: ', this.folders);
       if (this.folders.length > 0) {
         this.folders = this.folders.filter(
           (item: any) => item.userId === this.loggedInUserDetails.id
         );
         this.folders = this.helperService.sortByTime(this.folders);
-        // this.folders = this.folders.map((item: any) => {
-        //   return {
-        //     ...item,
-        //     folderName:
-        //       item?.folderName?.length > 15
-        //         ? item?.folderName.substring(0, 15) + '...'
-        //         : item?.folderName,
-        //   };
-        // });
       }
-    } catch (err) {
-      // this.toast.showErrorToast('')
-      console.log(err);
-    }
+    } catch (err) {}
   }
 
   readAllFolders(): Promise<any> {
@@ -89,6 +67,7 @@ export class FoldersPage {
           resolve(resp);
         },
         error: (err) => {
+          console.error(err);
           this.loaderService.hide();
           reject(err);
         },
@@ -120,7 +99,8 @@ export class FoldersPage {
           next: () => {
             this.updateFolderIdInSecret(folder);
           },
-          error: () => {
+          error: (err) => {
+            console.error(err);
             this.loaderService.hide();
             this.toast.showErrorToast(
               'Error Moving secrets to destination folder'
@@ -149,7 +129,8 @@ export class FoldersPage {
             this.showSuccessMsg(folder);
           }
         },
-        error: () => {
+        error: (err) => {
+          console.error(err);
           this.toast.showErrorToast(
             'Error Moving secrets to destination folder'
           );
@@ -157,15 +138,34 @@ export class FoldersPage {
       });
   }
 
-  updatePreviousFolderSecretsArray(folder: any) {
+  async updatePreviousFolderSecretsArray(folder: any) {
     const payload = {
       secrets: arrayRemove(this.secretId),
     };
+
+    // Check if Previous Folder exists
+
+    const folderDocRef = doc(
+      this.firestore,
+      collection.FOLDERS,
+      this.existingFolderId
+    );
+    const folderSnapshot = await getDoc(folderDocRef);
+
+    if (!folderSnapshot.exists()) {
+      console.warn('Folder does not exist in the database. Skipping update.');
+      this.showSuccessMsg(folder);
+      return;
+    }
+
     this.intermediateService
       .update(this.existingFolderId, payload, collection.FOLDERS)
       .subscribe({
         next: (resp) => {
           this.showSuccessMsg(folder);
+        },
+        error: (err) => {
+          console.error(err);
         },
       });
   }

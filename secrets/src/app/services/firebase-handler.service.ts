@@ -43,6 +43,22 @@ export class FirebaseHandlerService {
     return collectionData(itemsCollection, { idField: 'id' });
   }
 
+  // async readAll(collectionName: string): Promise<any[]> {
+  //   if (!this.firestore) {
+  //     console.warn('Firestore is not initialized');
+  //     return [];
+  //   }
+
+  //   const itemsCollection = collection(this.firestore, collectionName);
+  //   const q = query(itemsCollection, where('userId', '==', this.loggedInUserDetails?.id));
+
+  //   const snapshot = await getDocs(q);
+  //   return snapshot.docs.map((doc) => ({
+  //     id: doc.id,
+  //     ...doc.data(),
+  //   }));
+  // }
+
   getItemById(id: string, collectionName: string): Observable<any> {
     if (!this.firestore) return of(null);
 

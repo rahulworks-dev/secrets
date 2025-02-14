@@ -46,7 +46,6 @@ export class LoginPage implements OnInit {
   showSucessIcon = false;
   constructor(
     private router: Router,
-    private firebaseHandlerService: FirebaseHandlerService,
     private intermediateService: IntermediateService,
     private toast: ToastService,
     private loaderService: LoaderService,
@@ -72,12 +71,11 @@ export class LoginPage implements OnInit {
         } else {
           this.toast.showErrorToast('Either Username or Password is incorrect');
         }
-      }
-      else{
-        console.log('Returned Empty Array For Some reason');
+      } else {
+        console.error('Returned Empty Array For Some reason');
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
       this.toast.showErrorToast('Something went wrong!');
     }
   }
@@ -113,7 +111,7 @@ export class LoginPage implements OnInit {
     } catch (error) {
       this.showSpinner = false;
       this.isUserNameValid = false;
-      console.log(error);
+      console.error(error);
       this.toast.showErrorToast(
         "Username Availability couldn't be checked due to some technical issue, Please try again later"
       );
@@ -125,7 +123,6 @@ export class LoginPage implements OnInit {
     return new Promise((resolve, reject) => {
       this.intermediateService.readAll(collection.USERS).subscribe({
         next: (resp) => {
-          console.log('resp: ', resp);
           this.loaderService.hide();
           resolve(resp);
         },
@@ -153,6 +150,7 @@ export class LoginPage implements OnInit {
           this.toggle();
         },
         error: (err) => {
+          console.error(err);
           this.toast.showSuccessToast(
             'UnSuccessful Registeration, Please try again'
           );

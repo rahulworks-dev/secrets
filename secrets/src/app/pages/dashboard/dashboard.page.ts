@@ -24,19 +24,17 @@ export class DashboardPage {
   loggedInUserDetails: any;
   folders: any;
   hasNoSecrets = false;
+  i = 0;
   constructor(
-    private firebaseHandlerService: FirebaseHandlerService,
     private intermediateService: IntermediateService,
     private router: Router,
     private toast: ToastService,
     private actionSheet: ActionSheetController,
     private helperService: HelperService,
-    public loaderService: LoaderService,
-    private alertCtrl: AlertController
+    public loaderService: LoaderService
   ) {}
 
   async ionViewDidEnter() {
-    console.log('DASHBOARD');
     this.loggedInUserDetails =
       await this.helperService.getLoggedInUserDetails();
     this.fetchSecrets();
@@ -48,7 +46,6 @@ export class DashboardPage {
       this.loaderService.show();
       this.intermediateService.readAll(collection.SECRETS).subscribe({
         next: (resp) => {
-          console.log('resp: ', resp);
           this.loaderService.hide();
           if (resp?.length > 0) {
             this.secrets = resp;
@@ -58,6 +55,7 @@ export class DashboardPage {
           }
         },
         error: (e) => {
+          console.error(e);
           this.toast.showErrorToast(
             'Error Fetching Your Secrets, Please try again later'
           );
@@ -69,27 +67,29 @@ export class DashboardPage {
     }
   }
 
-  async fetchFolders() {
-    try {
-      this.folders = await this.readAllFolders();
-      if (this.folders.length > 0) {
-        this.folders = this.folders.filter(
-          (item: any) => item.userId === this.loggedInUserDetails.id
-        );
-        this.folders = this.helperService.sortByTime(this.folders);
-        // this.folders = this.folders.map((item: any) => {
-        //   return {
-        //     ...item,
-        //     folderName:
-        //       item?.folderName?.length > 10
-        //         ? item?.folderName.substring(0, 10) + '...'
-        //         : item?.folderName,
-        //   };
-        // });
-      }
-    } catch (err) {
-      this.toast.showErrorToast('Error Fetching Folders');
-      console.log(err);
+  fetchFolders() {
+    if (this.loggedInUserDetails) {
+      this.loaderService.show();
+      this.intermediateService.readAll(collection.FOLDERS).subscribe({
+        next: (resp) => {
+          this.loaderService.hide();
+          if (resp?.length > 0) {
+            this.folders = resp;
+            this.folders = this.helperService.sortByTime(this.folders);
+          } else {
+            this.folders = [];
+          }
+        },
+        error: (e) => {
+          console.error(e);
+          this.toast.showErrorToast(
+            'Error Fetching Your Secrets, Please try again later'
+          );
+        },
+      });
+    } else {
+      this.toast.showErrorToast('Logged-In User Details Not Found');
+      this.folders = [];
     }
   }
 
@@ -138,22 +138,6 @@ export class DashboardPage {
 
   setOpenModal(isOpen: boolean) {
     this.isModalOpen = isOpen;
-  }
-
-  readAllFolders(): Promise<any> {
-    this.loaderService.show();
-    return new Promise((resolve, reject) => {
-      this.intermediateService.readAll(collection.FOLDERS).subscribe({
-        next: (resp) => {
-          this.loaderService.hide();
-          resolve(resp);
-        },
-        error: (err) => {
-          this.loaderService.hide();
-          reject(err);
-        },
-      });
-    });
   }
 
   onWillDismiss(eve: any) {

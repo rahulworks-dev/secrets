@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { FirebaseHandlerService } from './firebase-handler.service';
 import { CryptoService } from './crypto.service';
 import { collection } from '../constants/secret.constant';
-import { from, map, Observable } from 'rxjs';
+import { firstValueFrom, from, map, Observable, switchMap, tap } from 'rxjs';
 import { HelperService } from './helper.service';
 import { Timestamp } from '@angular/fire/firestore';
 
@@ -15,14 +15,7 @@ export class IntermediateService {
     private firebaseHandlerService: FirebaseHandlerService,
     private cryptoService: CryptoService,
     private helperService: HelperService
-  ) {
-    this.initializeUserDetails();
-  }
-
-  private async initializeUserDetails() {
-    this.loggedInUserDetails =
-      await this.helperService.getLoggedInUserDetails();
-  }
+  ) {}
 
   create(data: any, collectionName: string): Observable<any> {
     if (data.hasOwnProperty('secret')) {
@@ -47,27 +40,39 @@ export class IntermediateService {
   }
 
   readAll(collectionName: string): Observable<any[]> {
-    return this.firebaseHandlerService.readAll(collectionName).pipe(
-      map((resp: any[]) =>
-        resp
-          .filter((item) => item?.userId === this.loggedInUserDetails?.id)
-          .map((item) => {
-            // Convert Firestore Timestamps to Date if they exist
-            if (item.createdOn instanceof Timestamp) {
-              item.createdOn = item.createdOn.toDate();
-            }
-            if (item.lastUpdatedOn instanceof Timestamp) {
-              item.lastUpdatedOn = item.lastUpdatedOn.toDate();
-            }
+    return from(this.helperService.getLoggedInUserDetails()).pipe(
+      tap((userDetails) => {
+        this.loggedInUserDetails = userDetails;
+      }),
+      switchMap(() => this.firebaseHandlerService.readAll(collectionName)),
+      tap((item: any) => {
+        if (collectionName === collection.FOLDERS) {
+          // console.log(item);
+        }
+      }),
+      map((resp: any[]) => {
+        const filteredResp = resp.filter(
+          (item) => item?.userId === this.loggedInUserDetails?.id
+        );
+        // console.log('Filtered Response:', filteredResp); // Log after filtering
 
-            // Decrypt secret if it exists
-            if (item.secret) {
-              item.secret = this.cryptoService.decrypt(item.secret);
-            }
+        return filteredResp.map((item) => {
+          // Convert Firestore Timestamps to Date if they exist
+          if (item.createdOn instanceof Timestamp) {
+            item.createdOn = item.createdOn.toDate();
+          }
+          if (item.lastUpdatedOn instanceof Timestamp) {
+            item.lastUpdatedOn = item.lastUpdatedOn.toDate();
+          }
 
-            return item;
-          })
-      )
+          // Decrypt secret if it exists
+          if (item.secret) {
+            item.secret = this.cryptoService.decrypt(item.secret);
+          }
+
+          return item;
+        });
+      })
     );
   }
 

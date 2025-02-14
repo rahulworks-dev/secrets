@@ -37,13 +37,16 @@ export class CreateFolderModalComponent implements OnInit {
     this.disableSubmitBtn = false;
   }
 
+  ngOnChanges() {
+    this.disableSubmitBtn = false;
+  }
+
   onWillDismiss(eve: any) {
     this.isModalOpen = false;
     this.setModalFalse.next(true);
   }
 
   async onFolderCreation() {
-    console.log(this.folderName);
     this.folderName = this.folderName ? this.folderName.trim() : '';
     if (this.folderName) {
       if (
@@ -106,15 +109,16 @@ export class CreateFolderModalComponent implements OnInit {
       this.loaderService.show();
       this.intermediateService.create(payload, collection.FOLDERS).subscribe({
         next: () => {
+          this.disableSubmitBtn = false;
           this.loaderService.hide();
           this.toast.showSuccessToast('Successfully Created New Folder');
           this.isModalOpen = false;
           this.folderName = '';
           this.fetchFolders.next(true);
           this.setModalFalse.next(true);
-          this.disableSubmitBtn = false;
         },
-        error: () => {
+        error: (err) => {
+          console.error(err);
           this.setModalFalse.next(true);
           this.toast.showErrorToast('Something Went Wrong!');
           this.loaderService.hide();
@@ -146,7 +150,8 @@ export class CreateFolderModalComponent implements OnInit {
           this.fetchFolders.next(true);
           this.setModalFalse.next(true);
         },
-        error: () => {
+        error: (err) => {
+          console.log(err);
           this.disableSubmitBtn = false;
           this.setModalFalse.next(true);
           this.toast.showErrorToast('Something Went Wrong!');

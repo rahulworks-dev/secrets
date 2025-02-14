@@ -1,5 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { ActionSheetController } from '@ionic/angular';
+import { ActionSheetController, AlertController } from '@ionic/angular';
+import { collection } from 'src/app/constants/secret.constant';
+import { FirebaseHandlerService } from 'src/app/services/firebase-handler.service';
+import { LoaderService } from 'src/app/services/loader.service';
 import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
@@ -11,6 +14,7 @@ import { ToastService } from 'src/app/services/toast.service';
 export class FoldersComponent implements OnInit {
   @Input() folders!: any[];
   @Input() setScrollableX = false;
+  @Input() showHeader = true;
   @Output() onFolderSelection = new EventEmitter<any>();
   @Output() _fetchFolders = new EventEmitter<any>();
 
@@ -19,11 +23,13 @@ export class FoldersComponent implements OnInit {
   selectedFolder: any;
   constructor(
     private actionSheet: ActionSheetController,
-    private toast: ToastService
+    private toast: ToastService,
+    public loaderService: LoaderService,
+    private firebaseService: FirebaseHandlerService,
+    private alertCtrl: AlertController
   ) {}
 
-  ngOnInit() {
-  }
+  ngOnInit() {}
 
   onSelectingFolder(folder: any) {
     this.onFolderSelection.next(folder);
@@ -56,7 +62,7 @@ export class FoldersComponent implements OnInit {
         {
           text: 'Delete',
           handler: () => {
-            this.toast.showInfoToast('This feature is coming soon');
+            this.showDeleteAlert(folder?.id);
           },
         },
         {
@@ -71,5 +77,46 @@ export class FoldersComponent implements OnInit {
     });
 
     await actionSheet.present();
+  }
+
+  async showDeleteAlert(folderId: any) {
+    const alert = await this.alertCtrl.create({
+      header: 'Delete Folder',
+      message:
+        'The secrets inside this folder will not be deleted; only the folder will be removed. Are you sure you want to proceed with deleting this folder ?',
+      cssClass: 'custom-alert',
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          cssClass: 'alert-button-cancel',
+          handler: () => {},
+        },
+        {
+          text: 'Yes',
+          role: 'confirm',
+          cssClass: 'alert-button-confirm',
+          handler: () => {
+            this.deleteFolder(folderId);
+          },
+        },
+      ],
+    });
+
+    await alert.present();
+  }
+
+  deleteFolder(folderId: any) {
+    if (!folderId) {
+      this.toast.showErrorToast(
+        'Something Went Wrong, We Could not delete the selected folder'
+      );
+      return;
+    }
+    this.firebaseService
+      .deleteItem(folderId, collection.FOLDERS)
+      .then((item: any) => {
+        this.toast.showSuccessToast('Successfully Deleted Folder');
+      });
   }
 }

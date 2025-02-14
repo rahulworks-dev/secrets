@@ -15,7 +15,7 @@ import { ToastService } from 'src/app/services/toast.service';
   standalone: false,
 })
 export class SecretCardsComponent implements OnInit {
-  @Input() secrets: any;
+  @Input() secrets: any = [];
   @Input() noSecretText: any =
     "No Secrets Added yet, Click on '+' to add your first secret";
   @Input() showTitle = true;
@@ -30,7 +30,9 @@ export class SecretCardsComponent implements OnInit {
     private intermediateService: IntermediateService
   ) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.isRevealed = false;
+  }
 
   ngOnChanges() {
     this.isRevealed = false;
@@ -113,6 +115,9 @@ export class SecretCardsComponent implements OnInit {
             'Successfully removed from this folder ! You can still find it in Dashboard'
           );
         },
+        error: (e) => {
+          console.error(e);
+        },
       });
   }
 
@@ -183,7 +188,8 @@ export class SecretCardsComponent implements OnInit {
           this.loaderService.hide();
           this.toast.showSuccessToast(customErrorMsg);
         },
-        error: () => {
+        error: (err) => {
+          console.log(err);
           this.loaderService.hide();
           this.toast.showErrorToast('Partially Deleted');
         },

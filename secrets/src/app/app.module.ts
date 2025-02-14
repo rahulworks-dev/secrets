@@ -20,7 +20,7 @@ import { IonicStorageModule } from '@ionic/storage-angular';
   imports: [
     BrowserModule,
     // IonicModule.forRoot({mode:'ios'}),
-    IonicModule.forRoot({mode:'ios'}),
+    IonicModule.forRoot({ mode: 'ios' }),
     AppRoutingModule,
     SharedModule,
     BrowserAnimationsModule,

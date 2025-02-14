@@ -18,14 +18,6 @@ import { ToastService } from 'src/app/services/toast.service';
   standalone: false,
 })
 export class AddSecretPage {
-  vibrantColors = [
-    '#007bff', // Electric Blue
-    '#ff007f', // Neon Pink
-    '#32ff7e', // Lime Green
-    '#ff5733', // Sunset Orange
-    '#ffcc00', // Bright Yellow
-    '#9b59b6', // Purple Vibe
-  ];
   customModalOptions = {
     header: 'Yours Folders',
     breakpoints: [0, 0.5],
@@ -41,9 +33,7 @@ export class AddSecretPage {
   isSaveButtonDisabled = false;
   constructor(
     private router: Router,
-    private firebaseHandler: FirebaseHandlerService,
     private intermediateService: IntermediateService,
-    private storageService: StorageService,
     private toast: ToastService,
     private loaderService: LoaderService,
     private helperService: HelperService,
@@ -51,6 +41,7 @@ export class AddSecretPage {
   ) {}
 
   async ionViewDidEnter() {
+    this.isSaveButtonDisabled = false;
     this.loggedInUserDetails =
       await this.helperService.getLoggedInUserDetails();
     this.route.queryParams.subscribe((params) => {
@@ -67,14 +58,14 @@ export class AddSecretPage {
       .readById(this.secretId, collection.SECRETS)
       .subscribe({
         next: (resp) => {
-          console.log(resp);
           if (resp) {
             this.existingSecret = resp;
             this.title = resp?.title || '';
             this.secret = resp?.secret || '';
           }
         },
-        error: () => {
+        error: (err) => {
+          console.error(err);
           this.toast.showErrorToast(
             'Error fetching your secret to edit, Please try again later'
           );
@@ -127,7 +118,8 @@ export class AddSecretPage {
           }
         }
       },
-      error: () => {
+      error: (err) => {
+        console.error(err);
         this.isSaveButtonDisabled = false;
         this.loaderService.hide();
       },
@@ -146,9 +138,9 @@ export class AddSecretPage {
           this.toast.showSuccessToast('Successfully added your Secret');
           this.router.navigateByUrl('/folder?folderId=' + this.folderId);
         },
-        error: (e) => {
+        error: (err) => {
+          console.error(err);
           this.isSaveButtonDisabled = false;
-          console.log(e);
           this.toast.showErrorToast('Something went wrong');
         },
       });
@@ -179,7 +171,8 @@ export class AddSecretPage {
             this.loaderService.hide();
             this.router.navigateByUrl('/dashboard');
           },
-          error: () => {
+          error: (err) => {
+            console.error(err);
             this.isSaveButtonDisabled = false;
             this.loaderService.hide();
           },

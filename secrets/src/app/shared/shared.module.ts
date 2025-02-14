@@ -8,6 +8,7 @@ import { FormsModule } from '@angular/forms';
 import { FoldersComponent } from './components/folders/folders.component';
 import { ColorChromeModule } from 'ngx-color/chrome'; // ✅ Import the Chrome color picker module
 import { SelectColorModalComponent } from './components/select-color-modal/select-color-modal.component';
+import { RouterModule } from '@angular/router';
 
 @NgModule({
   declarations: [
@@ -17,7 +18,7 @@ import { SelectColorModalComponent } from './components/select-color-modal/selec
     FoldersComponent,
     SelectColorModalComponent,
   ],
-  imports: [CommonModule, IonicModule, FormsModule, ColorChromeModule],
+  imports: [CommonModule, IonicModule, FormsModule, ColorChromeModule, RouterModule],
   exports: [
     HeaderComponent,
     SecretCardsComponent,

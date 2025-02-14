@@ -59,9 +59,9 @@ export class SecretsPage {
         next: (resp) => {
           this.folderDetails = resp;
           this.getSecrets(resp?.secrets);
-          console.log(resp);
         },
-        error: () => {
+        error: (err) => {
+          console.error(err);
           this.toast.showErrorToast(
             'Error Fetching Your Folder, Please try again later'
           );
@@ -82,12 +82,15 @@ export class SecretsPage {
           this.loaderService.hide();
           if (resp?.length > 0) {
             this.secretsList = resp.filter((item: any) =>
-              this.folderDetails.secrets.includes(item.id)
+              this.folderDetails?.secrets.includes(item.id)
             );
             this.secretsList = this.helperService.sortByTime(this.secretsList);
           } else {
             this.secretsList = [];
           }
+        },
+        error: (err) => {
+          console.error(err);
         },
       });
     } else {
