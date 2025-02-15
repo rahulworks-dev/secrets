@@ -93,18 +93,7 @@ export class DashboardPage {
     }
   }
 
-  onCopy(textToCopy: any) {
-    if (this.revealText === 'Reset') {
-      navigator.clipboard
-        .writeText(textToCopy)
-        .then(() => {
-          this.toast.showErrorToast('Text copied to clipboard!');
-        })
-        .catch((err) => {
-          console.error('Error copying text', err);
-        });
-    }
-  }
+ 
 
   async onAdd() {
     const actionSheet = await this.actionSheet.create({

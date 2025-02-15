@@ -44,6 +44,9 @@ export class LoginPage implements OnInit {
   isUserNameValid: any;
   showSpinner = false;
   showSucessIcon = false;
+  isUserIdModalOpen = false;
+  isForgotPasswordModalOpen = false;
+  signUpUserId: any;
   constructor(
     private router: Router,
     private intermediateService: IntermediateService,
@@ -55,28 +58,33 @@ export class LoginPage implements OnInit {
   ngOnInit() {}
 
   async login() {
-    try {
-      const users = await this.readAllUsers();
-      if (users.length > 0) {
-        const isExistingMember = users.find(
-          (item: any) =>
-            item?.username === this.username && item?.password === this.password
-        );
-        if (isExistingMember) {
-          this.storageService.set(
-            storage.IS_LOGGED_IN,
-            JSON.stringify(isExistingMember)
+    if (this.username && this.password) {
+      try {
+        const users = await this.readAllUsers();
+        if (users.length > 0) {
+          const isExistingMember = users.find(
+            (item: any) =>
+              item?.username === this.username &&
+              item?.password === this.password
           );
-          this.router.navigateByUrl('/dashboard');
+          if (isExistingMember) {
+            this.storageService.set(
+              storage.IS_LOGGED_IN,
+              JSON.stringify(isExistingMember)
+            );
+            this.router.navigateByUrl('/dashboard');
+          } else {
+            this.toast.showErrorToast(
+              'Either Username or Password is incorrect'
+            );
+          }
         } else {
-          this.toast.showErrorToast('Either Username or Password is incorrect');
+          console.error('Returned Empty Array For Some reason');
         }
-      } else {
-        console.error('Returned Empty Array For Some reason');
+      } catch (error) {
+        console.error(error);
+        this.toast.showErrorToast('Something went wrong!');
       }
-    } catch (error) {
-      console.error(error);
-      this.toast.showErrorToast('Something went wrong!');
     }
   }
 
@@ -85,6 +93,7 @@ export class LoginPage implements OnInit {
     this.password = '';
     this.confirmPassword = '';
     this.isSliding = !this.isSliding;
+    this.isUserIdModalOpen = false;
   }
 
   async onInputBlur() {
@@ -143,11 +152,11 @@ export class LoginPage implements OnInit {
       this.loaderService.show();
       this.intermediateService.create(data, collection.USERS).subscribe({
         next: (resp) => {
-          this.toast.showSuccessToast(
-            'Successful Registeration, Please login now'
-          );
+          this.signUpUserId = resp;
+          console.log('resp: ', resp);
+          this.toast.showSuccessToast('Successful Registeration');
           this.loaderService.hide();
-          this.toggle();
+          this.isUserIdModalOpen = true;
         },
         error: (err) => {
           console.error(err);
@@ -182,5 +191,9 @@ export class LoginPage implements OnInit {
       return false;
     }
     return false;
+  }
+
+  forgotPassword() {
+    this.isForgotPasswordModalOpen = true;
   }
 }

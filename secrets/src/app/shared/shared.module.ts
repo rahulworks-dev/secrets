@@ -6,9 +6,10 @@ import { SecretCardsComponent } from './components/secret-cards/secret-cards.com
 import { CreateFolderModalComponent } from './components/create-folder-modal/create-folder-modal.component';
 import { FormsModule } from '@angular/forms';
 import { FoldersComponent } from './components/folders/folders.component';
-import { ColorChromeModule } from 'ngx-color/chrome'; // ✅ Import the Chrome color picker module
 import { SelectColorModalComponent } from './components/select-color-modal/select-color-modal.component';
 import { RouterModule } from '@angular/router';
+import { ShowUserIdComponent } from './components/show-user-id/show-user-id.component';
+import { ForgotPasswordModalComponent } from './components/forgot-password-modal/forgot-password-modal.component';
 
 @NgModule({
   declarations: [
@@ -17,14 +18,18 @@ import { RouterModule } from '@angular/router';
     CreateFolderModalComponent,
     FoldersComponent,
     SelectColorModalComponent,
+    ShowUserIdComponent,
+    ForgotPasswordModalComponent,
   ],
-  imports: [CommonModule, IonicModule, FormsModule, ColorChromeModule, RouterModule],
+  imports: [CommonModule, IonicModule, FormsModule, RouterModule],
   exports: [
     HeaderComponent,
     SecretCardsComponent,
     CreateFolderModalComponent,
     FoldersComponent,
     SelectColorModalComponent,
+    ShowUserIdComponent,
+    ForgotPasswordModalComponent,
   ],
 })
 export class SharedModule {}

@@ -45,11 +45,7 @@ export class IntermediateService {
         this.loggedInUserDetails = userDetails;
       }),
       switchMap(() => this.firebaseHandlerService.readAll(collectionName)),
-      tap((item: any) => {
-        if (collectionName === collection.FOLDERS) {
-          // console.log(item);
-        }
-      }),
+      tap((item: any) => {}),
       map((resp: any[]) => {
         const filteredResp = resp.filter(
           (item) => item?.userId === this.loggedInUserDetails?.id
