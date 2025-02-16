@@ -25,7 +25,7 @@ export class FoldersPage {
   constructor(
     private router: Router,
     private helperService: HelperService,
-    private loaderService: LoaderService,
+    public loaderService: LoaderService,
     private intermediateService: IntermediateService,
     private route: ActivatedRoute,
     private toast: ToastService

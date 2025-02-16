@@ -39,16 +39,18 @@ export class IntermediateService {
     );
   }
 
-  readAll(collectionName: string): Observable<any[]> {
+  readAll(collectionName: string, comparisonKey = 'userId'): Observable<any[]> {
     return from(this.helperService.getLoggedInUserDetails()).pipe(
       tap((userDetails) => {
         this.loggedInUserDetails = userDetails;
       }),
       switchMap(() => this.firebaseHandlerService.readAll(collectionName)),
-      tap((item: any) => {}),
+      tap((item: any) => {
+        // console.log(item);
+      }),
       map((resp: any[]) => {
         const filteredResp = resp.filter(
-          (item) => item?.userId === this.loggedInUserDetails?.id
+          (item) => item?.[comparisonKey] === this.loggedInUserDetails?.id
         );
         // console.log('Filtered Response:', filteredResp); // Log after filtering
 

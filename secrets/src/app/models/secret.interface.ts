@@ -5,6 +5,8 @@ export interface Secret {
   createdOn: Date;
   lastUpdatedOn?: Date;
   folderId: string;
+  isFavorite: boolean;
+  isArchived: boolean;
 }
 
 export interface Folder {

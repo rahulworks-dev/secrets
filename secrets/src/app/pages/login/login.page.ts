@@ -55,7 +55,17 @@ export class LoginPage implements OnInit {
     private storageService: StorageService
   ) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    
+  }
+
+  ionViewDidEnter() {
+    this.showSpinner = false;
+    this.showSucessIcon = false;
+    this.username = '';
+    this.password = '';
+    this.confirmPassword = '';
+  }
 
   async login() {
     if (this.username && this.password) {
@@ -94,6 +104,11 @@ export class LoginPage implements OnInit {
     this.confirmPassword = '';
     this.isSliding = !this.isSliding;
     this.isUserIdModalOpen = false;
+  }
+
+  onTypingUsername(eve: any) {
+    this.showSucessIcon = false;
+    this.showSpinner = false;
   }
 
   async onInputBlur() {

@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { LoaderService } from './services/loader.service';
+import { HelperService } from './services/helper.service';
 
 @Component({
   selector: 'app-root',
@@ -9,5 +10,14 @@ import { LoaderService } from './services/loader.service';
 })
 export class AppComponent {
   isLoading = this.loaderService.isLoading$;
-  constructor(private loaderService: LoaderService) {}
+  isLoggedIn$ = this.helperService.isLoggedIn$;
+  constructor(
+    private loaderService: LoaderService,
+    private helperService: HelperService,
+    private cdr: ChangeDetectorRef
+  ) {}
+
+  ngOnInit() {
+    this.helperService.getLoggedInUserDetails();
+  }
 }

@@ -17,7 +17,7 @@ export class FoldersComponent implements OnInit {
   @Input() showHeader = true;
   @Output() onFolderSelection = new EventEmitter<any>();
   @Output() _fetchFolders = new EventEmitter<any>();
-
+  @Output() onNewFolder = new EventEmitter<any>();
   isModalOpen = false;
   isColorModalOpen = false;
   selectedFolder: any;
@@ -39,6 +39,10 @@ export class FoldersComponent implements OnInit {
     this._fetchFolders.next(true);
   }
 
+  createNewFolder() {
+    this.onNewFolder.next(true);
+  }
+
   async on3Dots(folder: any, event: Event) {
     event.stopPropagation();
     console.log('3-dots clicked for:', folder);
@@ -47,6 +51,7 @@ export class FoldersComponent implements OnInit {
       buttons: [
         {
           text: 'Rename',
+          cssClass: 'icon',
           handler: () => {
             this.selectedFolder = folder;
             this.isModalOpen = true;
@@ -54,6 +59,7 @@ export class FoldersComponent implements OnInit {
         },
         {
           text: 'Change Color',
+          cssClass: 'icon',
           handler: () => {
             this.selectedFolder = folder;
             this.isColorModalOpen = true;
@@ -61,6 +67,7 @@ export class FoldersComponent implements OnInit {
         },
         {
           text: 'Delete',
+          cssClass: 'icon',
           handler: () => {
             this.showDeleteAlert(folder?.id);
           },
@@ -117,6 +124,7 @@ export class FoldersComponent implements OnInit {
       .deleteItem(folderId, collection.FOLDERS)
       .then((item: any) => {
         this.toast.showSuccessToast('Successfully Deleted Folder');
+        this._fetchFolders.next(true);
       });
   }
 }

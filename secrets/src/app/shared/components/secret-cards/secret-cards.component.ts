@@ -20,6 +20,7 @@ export class SecretCardsComponent implements OnInit {
     "No Secrets Added yet, Click on '+' to add your first secret";
   @Input() showTitle = true;
   isRevealed = false;
+  filteredSecrets: any[] = [];
   constructor(
     public loaderService: LoaderService,
     private router: Router,
@@ -36,6 +37,9 @@ export class SecretCardsComponent implements OnInit {
 
   ngOnChanges() {
     this.isRevealed = false;
+    this.filteredSecrets = this.secrets.filter(
+      (secret: any) => !secret?.isArchived
+    );
   }
 
   onReveal() {
@@ -112,7 +116,7 @@ export class SecretCardsComponent implements OnInit {
         next: () => {
           this.removeSecretIdInFolderAsWell(
             secret,
-            'Successfully removed from this folder ! You can still find it in Dashboard'
+            'Successfully removed from this folder ! You can still find it in Home'
           );
         },
         error: (e) => {
@@ -217,6 +221,13 @@ export class SecretCardsComponent implements OnInit {
           },
         },
         {
+          text: 'Archive',
+          handler: () => {
+            // this.archive(secret);
+            this.toast.showInfoToast('Coming Soon');
+          },
+        },
+        {
           text: 'Cancel',
           role: 'cancel',
           data: {
@@ -228,5 +239,59 @@ export class SecretCardsComponent implements OnInit {
     });
 
     await actionSheet.present();
+  }
+
+  archive(secret: any) {
+    if (!this.isRevealed) {
+      this.toast.showInfoToast(
+        'We recommend revealing the secret before performing any actions to ensure they are executed correctly.'
+      );
+      return;
+    }
+    this.loaderService.show();
+    const payload = {
+      isArchived: true,
+    };
+    this.intermediateService
+      .update(secret?.id, payload, collection.SECRETS)
+      .subscribe({
+        next: (resp) => {
+          this.toast.showSuccessToast(
+            'Archived Succesfully, You can find Archives under Profile section.'
+          );
+        },
+        error: (e) => {
+          console.error(e);
+          this.toast.showErrorToast(
+            'Something Went Wrong, We Could not Add to favorites'
+          );
+        },
+      });
+  }
+
+  addToFavorite(secret: any) {
+    if (!this.isRevealed) {
+      this.toast.showInfoToast(
+        'We recommend revealing the secret before performing any actions to ensure they are executed correctly.'
+      );
+      return;
+    }
+    this.loaderService.show();
+    const payload = {
+      isFavorite: !secret?.isFavorite,
+    };
+    this.intermediateService
+      .update(secret?.id, payload, collection.SECRETS)
+      .subscribe({
+        next: (resp) => {
+          // this.toast.showSuccessToast('Added to Favorites');
+        },
+        error: (e) => {
+          console.error(e);
+          this.toast.showErrorToast(
+            'Something Went Wrong, We Could not Add to favorites'
+          );
+        },
+      });
   }
 }

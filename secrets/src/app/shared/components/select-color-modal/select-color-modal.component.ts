@@ -27,10 +27,6 @@ export class SelectColorModalComponent implements OnInit {
 
   ngOnInit() {}
 
-  ngOnChanges() {
-    console.log(this.selectedFolder);
-  }
-
   onWillDismiss(eve: any) {
     this.closeModal();
   }

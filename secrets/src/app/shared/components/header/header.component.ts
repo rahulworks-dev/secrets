@@ -15,7 +15,7 @@ import { StorageService } from 'src/app/services/storage.service';
 export class HeaderComponent implements OnInit {
   isLoading = this.loaderService.isLoading$;
   heroText: any = '';
-  enableDom:any;
+  enableDom: any;
   constructor(
     private loaderService: LoaderService,
     private helperService: HelperService,
@@ -32,13 +32,10 @@ export class HeaderComponent implements OnInit {
   }
 
   ngOnInit() {
-    console.log('HI');
     this.enableDom = true;
   }
 
-  ionViewDidEnter(){
-    
-  }
+  ionViewDidEnter() {}
 
   async GoToDashboard() {
     const isLoggedIn = await this.helperService.getLoggedInUserDetails();
@@ -51,7 +48,6 @@ export class HeaderComponent implements OnInit {
 
   configureHeader(currentUrl: any) {
     this.heroText = currentUrl.split('/').at(-1);
-    console.log('this.heroText: ', this.heroText);
     if (this.heroText.includes('?')) {
       const [beforeQuestionMark, queryString] = this.heroText.split('?');
       const params = new URLSearchParams(queryString);
@@ -66,36 +62,5 @@ export class HeaderComponent implements OnInit {
 
   goBack() {
     this.location.back();
-  }
-
-  async logout() {
-    const alert = await this.alertCtrl.create({
-      header: 'Logout',
-      subHeader: '',
-      message: 'Are you sure you want to Logout ?',
-      cssClass: 'custom-alert',
-      buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel',
-          cssClass: 'alert-button-cancel',
-          handler: () => {
-            console.log('Alert canceled');
-          },
-        },
-        {
-          text: 'Yes',
-          role: 'confirm',
-          cssClass: 'alert-button-confirm',
-          handler: () => {
-            console.log('Alert confirmed');
-            this.storageService.clear();
-            this.router.navigateByUrl('/login');
-          },
-        },
-      ],
-    });
-
-    await alert.present();
   }
 }

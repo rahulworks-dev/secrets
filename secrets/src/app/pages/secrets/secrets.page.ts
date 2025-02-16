@@ -39,7 +39,6 @@ export class SecretsPage {
   }
 
   readActionFromURL() {
-    console.log('READ QUERY PARAM');
     this.route.queryParams
       .pipe(
         distinctUntilChanged(

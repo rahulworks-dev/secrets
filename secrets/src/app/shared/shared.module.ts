@@ -10,6 +10,8 @@ import { SelectColorModalComponent } from './components/select-color-modal/selec
 import { RouterModule } from '@angular/router';
 import { ShowUserIdComponent } from './components/show-user-id/show-user-id.component';
 import { ForgotPasswordModalComponent } from './components/forgot-password-modal/forgot-password-modal.component';
+import { BottomTabComponent } from './components/bottom-tab/bottom-tab.component';
+import { DesktopSidebarComponent } from './components/desktop-sidebar/desktop-sidebar.component';
 
 @NgModule({
   declarations: [
@@ -20,6 +22,8 @@ import { ForgotPasswordModalComponent } from './components/forgot-password-modal
     SelectColorModalComponent,
     ShowUserIdComponent,
     ForgotPasswordModalComponent,
+    BottomTabComponent,
+    DesktopSidebarComponent,
   ],
   imports: [CommonModule, IonicModule, FormsModule, RouterModule],
   exports: [
@@ -30,6 +34,8 @@ import { ForgotPasswordModalComponent } from './components/forgot-password-modal
     SelectColorModalComponent,
     ShowUserIdComponent,
     ForgotPasswordModalComponent,
+    BottomTabComponent,
+    DesktopSidebarComponent,
   ],
 })
 export class SharedModule {}

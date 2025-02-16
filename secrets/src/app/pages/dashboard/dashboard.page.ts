@@ -34,6 +34,20 @@ export class DashboardPage {
     public loaderService: LoaderService
   ) {}
 
+  ngOnInit() {
+    this.checkIfAddClickedFromTab();
+  }
+
+  checkIfAddClickedFromTab() {
+    // this.helperService.isAddClickedFromTab.subscribe({
+    //   next: (resp) => {
+    //     if (resp) {
+    //       this.onAdd();
+    //     }
+    //   },
+    // });
+  }
+
   async ionViewDidEnter() {
     this.loggedInUserDetails =
       await this.helperService.getLoggedInUserDetails();
@@ -92,8 +106,6 @@ export class DashboardPage {
       this.folders = [];
     }
   }
-
- 
 
   async onAdd() {
     const actionSheet = await this.actionSheet.create({

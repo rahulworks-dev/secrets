@@ -13,12 +13,16 @@ import { ToastService } from 'src/app/services/toast.service';
 export class ForgotPasswordModalComponent implements OnInit {
   username: any;
   @Input() isModalOpen = false;
+  @Input() isChangePassword = false;
   @Output() setModalOpenToFalse = new EventEmitter<any>();
   secureId: any;
   isSuccessfullVerification = false;
   password: any;
   confirmPassword: any;
   isUserAvailable: any;
+
+  currentPassword: any;
+  isUserAvailableForChangePassword: any;
   constructor(
     private intermediateService: IntermediateService,
     private toast: ToastService
@@ -33,6 +37,7 @@ export class ForgotPasswordModalComponent implements OnInit {
   resetForm() {
     this.password = '';
     this.confirmPassword = '';
+    this.currentPassword = '';
     this.secureId = '';
     this.isUserAvailable = null;
     this.username = '';
@@ -73,6 +78,37 @@ export class ForgotPasswordModalComponent implements OnInit {
     }
   }
 
+  onContinueWithCurrentPassword() {
+    if (this.currentPassword) {
+      this.isUserAvailable = null;
+      this.intermediateService
+        .readAll(collection.USERS, 'id')
+        .pipe(take(1))
+        .subscribe({
+          next: (resp) => {
+            console.log('resp: ', resp);
+            if (resp?.length > 0) {
+              this.isUserAvailable = resp?.find((item: any) => {
+                return item.password == this.currentPassword;
+              });
+
+              if (this.isUserAvailable) {
+                this.toast.showSuccessToast('Successfull Verification');
+                this.isSuccessfullVerification = true;
+              } else {
+                this.toast.showErrorToast('Incorrect Password');
+                this.isSuccessfullVerification = false;
+              }
+            } else {
+              this.toast.showErrorToast(
+                'We Could not verify due to technical issues, Please try again'
+              );
+            }
+          },
+        });
+    }
+  }
+
   onUpdatePassword() {
     if (this.password && this.confirmPassword) {
       if (this.password == this.isUserAvailable?.password) {
@@ -100,9 +136,10 @@ export class ForgotPasswordModalComponent implements OnInit {
       .subscribe({
         next: (resp) => {
           this.resetForm();
-          this.toast.showSuccessToast(
-            'Successfully Updated Your Password, Please Login with the Updated Password now'
-          );
+          const successMsg = this.isChangePassword
+            ? 'Successfully Changed Your Password'
+            : 'Successfully Updated Your Password, Please Login with the Updated Password now';
+          this.toast.showSuccessToast(successMsg);
           this.setModalOpenToFalse.next(true);
         },
         error: (e) => {

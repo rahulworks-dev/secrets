@@ -104,6 +104,8 @@ export class AddSecretPage {
       userId: this.loggedInUserDetails.id,
       createdOn: new Date(),
       folderId: this.folderId ? this.folderId : '',
+      isFavorite: false,
+      isArchived: false,
     };
     this.intermediateService.create(payload, collection.SECRETS).subscribe({
       next: (secretId: any) => {

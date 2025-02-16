@@ -16,6 +16,7 @@ const routes: Routes = [
   },
   {
     path: 'add-secret',
+    data: { activeIndex: 2 },
     loadChildren: () =>
       import('./pages/add-secret/add-secret.module').then(
         (m) => m.AddSecretPageModule
@@ -24,6 +25,7 @@ const routes: Routes = [
   },
   {
     path: 'edit-secret',
+    data: { activeIndex: 2 },
     loadChildren: () =>
       import('./pages/add-secret/add-secret.module').then(
         (m) => m.AddSecretPageModule
@@ -32,6 +34,7 @@ const routes: Routes = [
   },
   {
     path: 'dashboard',
+    data: { activeIndex: 0 },
     loadChildren: () =>
       import('./pages/dashboard/dashboard.module').then(
         (m) => m.DashboardPageModule
@@ -40,18 +43,31 @@ const routes: Routes = [
   },
   {
     path: 'my-folders',
+    data: { activeIndex: 1 },
     loadChildren: () =>
       import('./pages/folders/folders.module').then((m) => m.FoldersPageModule),
   },
   {
     path: 'move-to',
+    data: { activeIndex: 1 },
     loadChildren: () =>
       import('./pages/folders/folders.module').then((m) => m.FoldersPageModule),
   },
   {
     path: 'folder',
+    data: { activeIndex: 1 },
     loadChildren: () =>
       import('./pages/secrets/secrets.module').then((m) => m.SecretsPageModule),
+  },
+  {
+    path: 'favorites',
+    data: { activeIndex: 3 },
+    loadChildren: () => import('./pages/favorites/favorites.module').then( m => m.FavoritesPageModule)
+  },
+  {
+    path: 'profile',
+    data: { activeIndex: 4 },
+    loadChildren: () => import('./pages/profile/profile.module').then( m => m.ProfilePageModule)
   },
 ];
 
