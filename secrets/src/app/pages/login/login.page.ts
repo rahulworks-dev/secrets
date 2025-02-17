@@ -55,9 +55,7 @@ export class LoginPage implements OnInit {
     private storageService: StorageService
   ) {}
 
-  ngOnInit() {
-    
-  }
+  ngOnInit() {}
 
   ionViewDidEnter() {
     this.showSpinner = false;
@@ -89,6 +87,7 @@ export class LoginPage implements OnInit {
             );
           }
         } else {
+          this.toast.showErrorToast('No Records Found, Please Sign Up!');
           console.error('Returned Empty Array For Some reason');
         }
       } catch (error) {

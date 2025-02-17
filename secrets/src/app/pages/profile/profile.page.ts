@@ -47,6 +47,8 @@ export class ProfilePage implements OnInit {
   onProfileExtra(extra: any) {
     if (extra?.name === 'Sign out') {
       this.logout();
+    } else if (extra?.name === 'Archives') {
+      this.router.navigateByUrl(extra?.route);
     } else {
       this.toast.showInfoToast('Coming Soon!');
     }

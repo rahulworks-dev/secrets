@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { arrayRemove, doc, Firestore, getDoc } from '@angular/fire/firestore';
 import { ActivatedRoute, Router } from '@angular/router';
-import { collection } from 'src/app/constants/secret.constant';
+import { collection, messages } from 'src/app/constants/secret.constant';
 import { FirebaseHandlerService } from 'src/app/services/firebase-handler.service';
 import { HelperService } from 'src/app/services/helper.service';
 import { IntermediateService } from 'src/app/services/intermediate.service';
@@ -17,11 +17,12 @@ import { ToastService } from 'src/app/services/toast.service';
 export class FoldersPage {
   private firestore = inject(Firestore);
   folders: any;
-  loggedInUserDetails: any;
   action: any;
   secretId: any;
   existingFolderId: any;
   isModalOpen = false;
+  noFolderText: any;
+  isAPIError = false;
   constructor(
     private router: Router,
     private helperService: HelperService,
@@ -32,8 +33,6 @@ export class FoldersPage {
   ) {}
 
   async ionViewDidEnter() {
-    this.loggedInUserDetails =
-      await this.helperService.getLoggedInUserDetails();
     this.fetchFolders();
     this.readActionFromURL();
   }
@@ -47,31 +46,24 @@ export class FoldersPage {
   }
 
   async fetchFolders() {
-    try {
-      this.folders = await this.readAllFolders();
-      if (this.folders.length > 0) {
-        this.folders = this.folders.filter(
-          (item: any) => item.userId === this.loggedInUserDetails.id
-        );
-        this.folders = this.helperService.sortByTime(this.folders);
-      }
-    } catch (err) {}
-  }
-
-  readAllFolders(): Promise<any> {
+    this.isAPIError = false;
+    this.noFolderText = '';
+    this.folders = [];
     this.loaderService.show();
-    return new Promise((resolve, reject) => {
-      this.intermediateService.readAll(collection.FOLDERS).subscribe({
-        next: (resp) => {
-          this.loaderService.hide();
-          resolve(resp);
-        },
-        error: (err) => {
-          console.error(err);
-          this.loaderService.hide();
-          reject(err);
-        },
-      });
+    this.intermediateService.readAll(collection.FOLDERS).subscribe({
+      next: (resp) => {
+        this.loaderService.hide();
+        if (resp?.length > 0) {
+          this.folders = this.helperService.sortByTime(resp);
+        } else {
+          this.noFolderText = messages.NO_FOLDERS;
+        }
+      },
+      error: (e) => {
+        this.loaderService.hide();
+        this.isAPIError = true;
+        this.noFolderText = messages.API_ERROR_MESSAGE;
+      },
     });
   }
 

@@ -53,6 +53,7 @@ export const profileExtrasOne = [
   {
     name: 'Archives',
     icon: 'archive',
+    route: 'archives',
   },
 ];
 

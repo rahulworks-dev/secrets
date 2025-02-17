@@ -10,7 +10,7 @@ import {
   Timestamp,
   updateDoc,
 } from '@angular/fire/firestore';
-import { from, map, Observable, of } from 'rxjs';
+import { from, map, Observable, of, throwError } from 'rxjs';
 import { CryptoService } from './crypto.service';
 import { HelperService } from './helper.service';
 
@@ -38,7 +38,7 @@ export class FirebaseHandlerService {
       console.warn('Firestore is not initialized');
       return of([]);
     }
-
+    // return throwError(() => new Error('Failed to fetch data from Firestore'));
     const itemsCollection = collection(this.firestore, collectionName);
     return collectionData(itemsCollection, { idField: 'id' });
   }

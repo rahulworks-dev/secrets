@@ -15,12 +15,15 @@ export class FoldersComponent implements OnInit {
   @Input() folders!: any[];
   @Input() setScrollableX = false;
   @Input() showHeader = true;
+  @Input() noFolderText: any;
+  @Input() isAPIError = false;
   @Output() onFolderSelection = new EventEmitter<any>();
   @Output() _fetchFolders = new EventEmitter<any>();
   @Output() onNewFolder = new EventEmitter<any>();
   isModalOpen = false;
   isColorModalOpen = false;
   selectedFolder: any;
+  finalFolders: any[] = [];
   constructor(
     private actionSheet: ActionSheetController,
     private toast: ToastService,
@@ -30,6 +33,14 @@ export class FoldersComponent implements OnInit {
   ) {}
 
   ngOnInit() {}
+
+  ngOnChanges() {
+    if (this.setScrollableX && this.folders) {
+      this.finalFolders = this.folders.slice(0, 4);
+    } else {
+      this.finalFolders = this.folders;
+    }
+  }
 
   onSelectingFolder(folder: any) {
     this.onFolderSelection.next(folder);

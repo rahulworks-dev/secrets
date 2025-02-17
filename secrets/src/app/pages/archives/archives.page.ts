@@ -1,26 +1,23 @@
 import { Component, OnInit } from '@angular/core';
 import { collection, messages } from 'src/app/constants/secret.constant';
-import { HelperService } from 'src/app/services/helper.service';
 import { IntermediateService } from 'src/app/services/intermediate.service';
 import { LoaderService } from 'src/app/services/loader.service';
 import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
-  selector: 'app-favorites',
-  templateUrl: './favorites.page.html',
-  styleUrls: ['./favorites.page.scss'],
+  selector: 'app-archives',
+  templateUrl: './archives.page.html',
+  styleUrls: ['./archives.page.scss'],
   standalone: false,
 })
-export class FavoritesPage implements OnInit {
+export class ArchivesPage implements OnInit {
   secrets: any;
   noSecretText: any;
   hasNoFavorites: any;
   isAPIError: any;
   constructor(
-    private helperService: HelperService,
     private loaderService: LoaderService,
-    private intermediateService: IntermediateService,
-    private toast: ToastService
+    private intermediateService: IntermediateService
   ) {}
 
   ngOnInit() {}
@@ -38,13 +35,11 @@ export class FavoritesPage implements OnInit {
       next: (resp) => {
         this.loaderService.hide();
         if (resp?.length > 0) {
-          const filteredSecrets = resp.filter(
-            (item: any) => item?.isFavorite && !item?.isArchived
-          );
+          const filteredSecrets = resp.filter((item: any) => item?.isArchived);
           if (filteredSecrets?.length > 0) {
             this.secrets = filteredSecrets;
           } else {
-            this.noSecretText = messages.NO_FAVORITES;
+            this.noSecretText = messages.NO_ARCHIVES;
           }
         } else {
           this.noSecretText = messages.NO_SECRETS;

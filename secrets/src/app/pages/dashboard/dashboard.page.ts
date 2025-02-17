@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActionSheetController, AlertController } from '@ionic/angular';
-import { collection } from 'src/app/constants/secret.constant';
+import { collection, messages } from 'src/app/constants/secret.constant';
 import { vibrantColors } from 'src/app/data/static-data';
 import { Folder } from 'src/app/models/secret.interface';
 import { FirebaseHandlerService } from 'src/app/services/firebase-handler.service';
@@ -19,12 +19,13 @@ import { ToastService } from 'src/app/services/toast.service';
 export class DashboardPage {
   secrets: any = [];
   revealText = 'Reveal All';
-  isModalOpen = false;
+  isCreateFolderModalOpen = false;
   folderName: any;
-  loggedInUserDetails: any;
   folders: any;
-  hasNoSecrets = false;
-  i = 0;
+  hasNoFolders = false;
+  isAPIError = false;
+  noSecretText: any;
+  noFolderText: any;
   constructor(
     private intermediateService: IntermediateService,
     private router: Router,
@@ -34,115 +35,64 @@ export class DashboardPage {
     public loaderService: LoaderService
   ) {}
 
-  ngOnInit() {
-    this.checkIfAddClickedFromTab();
-  }
-
-  checkIfAddClickedFromTab() {
-    // this.helperService.isAddClickedFromTab.subscribe({
-    //   next: (resp) => {
-    //     if (resp) {
-    //       this.onAdd();
-    //     }
-    //   },
-    // });
-  }
-
   async ionViewDidEnter() {
-    this.loggedInUserDetails =
-      await this.helperService.getLoggedInUserDetails();
+    console.log('hi');
     this.fetchSecrets();
     this.fetchFolders();
   }
 
   fetchSecrets() {
-    if (this.loggedInUserDetails) {
-      this.loaderService.show();
-      this.intermediateService.readAll(collection.SECRETS).subscribe({
-        next: (resp) => {
-          this.loaderService.hide();
-          if (resp?.length > 0) {
-            this.secrets = resp;
+    this.isAPIError = false;
+    this.noSecretText = '';
+    this.secrets = [];
+    this.loaderService.show();
+
+    this.intermediateService.readAll(collection.SECRETS).subscribe({
+      next: (resp) => {
+        this.loaderService.hide();
+        const hasSecrets = Boolean(resp?.length);
+        this.noSecretText = hasSecrets ? '' : messages.NO_SECRETS;
+        if (hasSecrets) {
+          this.secrets = resp.filter((item: any) => !item?.isArchived);
+          if (this.secrets?.length > 0) {
             this.secrets = this.helperService.sortByTime(this.secrets);
           } else {
-            this.secrets = [];
+            this.noSecretText = messages.NO_SECRETS;
           }
-        },
-        error: (e) => {
-          console.error(e);
-          this.toast.showErrorToast(
-            'Error Fetching Your Secrets, Please try again later'
-          );
-        },
-      });
-    } else {
-      this.toast.showErrorToast('Logged-In User Details Not Found');
-      this.secrets = [];
-    }
+        } else {
+          this.secrets = [];
+        }
+      },
+      error: (e) => {
+        this.loaderService.hide();
+        this.isAPIError = true;
+        this.noSecretText = messages.API_ERROR_MESSAGE;
+        console.error(e);
+      },
+    });
   }
 
   fetchFolders() {
-    if (this.loggedInUserDetails) {
-      this.loaderService.show();
-      this.intermediateService.readAll(collection.FOLDERS).subscribe({
-        next: (resp) => {
-          this.loaderService.hide();
-          if (resp?.length > 0) {
-            this.folders = resp;
-            this.folders = this.helperService.sortByTime(this.folders);
-          } else {
-            this.folders = [];
-          }
-        },
-        error: (e) => {
-          console.error(e);
-          this.toast.showErrorToast(
-            'Error Fetching Your Secrets, Please try again later'
-          );
-        },
-      });
-    } else {
-      this.toast.showErrorToast('Logged-In User Details Not Found');
-      this.folders = [];
-    }
-  }
+    this.folders = [];
+    this.loaderService.show();
 
-  async onAdd() {
-    const actionSheet = await this.actionSheet.create({
-      header: '',
-      buttons: [
-        {
-          text: 'Create New Folder',
-          handler: () => {
-            this.setOpenModal(true);
-          },
-        },
-        {
-          text: 'Add Secret',
-          handler: () => {
-            this.router.navigateByUrl('/add-secret');
-          },
-        },
-        {
-          text: 'Cancel',
-          role: 'cancel',
-          data: {
-            action: 'cancel',
-          },
-        },
-      ],
-      cssClass: 'custom-action-sheet',
+    this.intermediateService.readAll(collection.FOLDERS).subscribe({
+      next: (resp) => {
+        this.loaderService.hide();
+        const hasFolders = Boolean(resp?.length);
+        this.hasNoFolders = !hasFolders;
+        this.isAPIError = false;
+        this.noFolderText = hasFolders ? '' : messages.NO_FOLDERS;
+        this.folders = hasFolders ? this.helperService.sortByTime(resp) : [];
+      },
+      error: (e) => {
+        this.loaderService.hide();
+        this.hasNoFolders = false;
+        this.isAPIError = true;
+        this.noFolderText = messages.API_ERROR_MESSAGE;
+        console.error(e);
+      },
     });
-
-    await actionSheet.present();
-  }
-
-  setOpenModal(isOpen: boolean) {
-    this.isModalOpen = isOpen;
-  }
-
-  onWillDismiss(eve: any) {
-    this.setOpenModal(false);
   }
 
   openFolder(folder: any) {

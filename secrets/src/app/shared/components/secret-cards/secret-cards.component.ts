@@ -16,11 +16,12 @@ import { ToastService } from 'src/app/services/toast.service';
 })
 export class SecretCardsComponent implements OnInit {
   @Input() secrets: any = [];
-  @Input() noSecretText: any =
-    "No Secrets Added yet, Click on '+' to add your first secret";
+  @Input() isAPIError = false;
+  @Input() noSecretText: any;
   @Input() showTitle = true;
   isRevealed = false;
   filteredSecrets: any[] = [];
+  isArchivePage = false;
   constructor(
     public loaderService: LoaderService,
     private router: Router,
@@ -34,12 +35,11 @@ export class SecretCardsComponent implements OnInit {
   ngOnInit() {
     this.isRevealed = false;
   }
-
+  
   ngOnChanges() {
+    this.isArchivePage = this.router.url.includes('archives');
     this.isRevealed = false;
-    this.filteredSecrets = this.secrets.filter(
-      (secret: any) => !secret?.isArchived
-    );
+    console.log('SECRET-CARD', this.secrets);
   }
 
   onReveal() {
@@ -207,9 +207,25 @@ export class SecretCardsComponent implements OnInit {
       );
       return;
     }
-    const actionSheet = await this.actionSheet.create({
-      header: '',
-      buttons: [
+    let buttons: any[] = [];
+    if (this.router.url.includes('archives')) {
+      buttons = [
+        {
+          text: 'Unarchive',
+          handler: () => {
+            this.archive(secret, false);
+          },
+        },
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          data: {
+            action: 'cancel',
+          },
+        },
+      ];
+    } else {
+      buttons = [
         {
           text: 'Move',
           handler: () => {
@@ -223,8 +239,7 @@ export class SecretCardsComponent implements OnInit {
         {
           text: 'Archive',
           handler: () => {
-            // this.archive(secret);
-            this.toast.showInfoToast('Coming Soon');
+            this.archive(secret);
           },
         },
         {
@@ -234,14 +249,18 @@ export class SecretCardsComponent implements OnInit {
             action: 'cancel',
           },
         },
-      ],
+      ];
+    }
+    const actionSheet = await this.actionSheet.create({
+      header: '',
+      buttons: buttons,
       cssClass: 'custom-action-sheet',
     });
 
     await actionSheet.present();
   }
 
-  archive(secret: any) {
+  archive(secret: any, isArchive = true) {
     if (!this.isRevealed) {
       this.toast.showInfoToast(
         'We recommend revealing the secret before performing any actions to ensure they are executed correctly.'
@@ -250,15 +269,16 @@ export class SecretCardsComponent implements OnInit {
     }
     this.loaderService.show();
     const payload = {
-      isArchived: true,
+      isArchived: isArchive,
     };
     this.intermediateService
       .update(secret?.id, payload, collection.SECRETS)
       .subscribe({
         next: (resp) => {
-          this.toast.showSuccessToast(
-            'Archived Succesfully, You can find Archives under Profile section.'
-          );
+          const message = isArchive
+            ? 'Archived Succesfully, You can find Archives under Profile section.'
+            : 'Unarchived Successfully';
+          this.toast.showSuccessToast(message);
         },
         error: (e) => {
           console.error(e);

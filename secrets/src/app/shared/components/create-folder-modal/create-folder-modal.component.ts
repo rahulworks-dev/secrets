@@ -2,6 +2,7 @@ import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { collection } from 'src/app/constants/secret.constant';
 import { vibrantColors } from 'src/app/data/static-data';
 import { Folder } from 'src/app/models/secret.interface';
+import { HelperService } from 'src/app/services/helper.service';
 import { IntermediateService } from 'src/app/services/intermediate.service';
 import { LoaderService } from 'src/app/services/loader.service';
 import { ToastService } from 'src/app/services/toast.service';
@@ -18,7 +19,6 @@ export class CreateFolderModalComponent implements OnInit {
   disableSubmitBtn = false;
   @Input() isModalOpen = false;
   @Input() folders: any;
-  @Input() loggedInUserDetails: any;
   @Input() set selectedFolder(value: any) {
     if (value) {
       this._selectedFolder = value;
@@ -30,7 +30,8 @@ export class CreateFolderModalComponent implements OnInit {
   constructor(
     private toast: ToastService,
     private loaderService: LoaderService,
-    private intermediateService: IntermediateService
+    private intermediateService: IntermediateService,
+    private helperService: HelperService
   ) {}
 
   ngOnInit() {
@@ -96,41 +97,36 @@ export class CreateFolderModalComponent implements OnInit {
     return false;
   }
 
-  createFolder() {
+  async createFolder() {
     this.disableSubmitBtn = true;
-    if (this.loggedInUserDetails) {
-      const payload: Folder = {
-        userId: this.loggedInUserDetails?.id,
-        folderName: this.folderName,
-        folderColor: this.getRandomColor(),
-        secrets: [],
-        createdOn: new Date(),
-      };
-      this.loaderService.show();
-      this.intermediateService.create(payload, collection.FOLDERS).subscribe({
-        next: () => {
-          this.disableSubmitBtn = false;
-          this.loaderService.hide();
-          this.toast.showSuccessToast('Successfully Created New Folder');
-          this.isModalOpen = false;
-          this.folderName = '';
-          this.fetchFolders.next(true);
-          this.setModalFalse.next(true);
-        },
-        error: (err) => {
-          console.error(err);
-          this.setModalFalse.next(true);
-          this.toast.showErrorToast('Something Went Wrong!');
-          this.loaderService.hide();
-          this.disableSubmitBtn = false;
-        },
-      });
-    } else {
-      this.disableSubmitBtn = false;
-      this.toast.showErrorToast(
-        'Logged-in User details Not found, Folder cannot be created'
-      );
-    }
+    const loggedInUserDetails =
+      await this.helperService.getLoggedInUserDetails();
+    const payload: Folder = {
+      userId: loggedInUserDetails?.id,
+      folderName: this.folderName,
+      folderColor: this.getRandomColor(),
+      secrets: [],
+      createdOn: new Date(),
+    };
+    this.loaderService.show();
+    this.intermediateService.create(payload, collection.FOLDERS).subscribe({
+      next: () => {
+        this.disableSubmitBtn = false;
+        this.loaderService.hide();
+        this.toast.showSuccessToast('Successfully Created New Folder');
+        this.isModalOpen = false;
+        this.folderName = '';
+        this.fetchFolders.next(true);
+        this.setModalFalse.next(true);
+      },
+      error: (err) => {
+        console.error(err);
+        this.setModalFalse.next(true);
+        this.toast.showErrorToast('Something Went Wrong!');
+        this.loaderService.hide();
+        this.disableSubmitBtn = false;
+      },
+    });
   }
 
   updateFolder() {

@@ -46,28 +46,46 @@ const routes: Routes = [
     data: { activeIndex: 1 },
     loadChildren: () =>
       import('./pages/folders/folders.module').then((m) => m.FoldersPageModule),
+    canActivate: [AuthGuard],
   },
   {
     path: 'move-to',
     data: { activeIndex: 1 },
     loadChildren: () =>
       import('./pages/folders/folders.module').then((m) => m.FoldersPageModule),
+    canActivate: [AuthGuard],
   },
   {
     path: 'folder',
     data: { activeIndex: 1 },
     loadChildren: () =>
       import('./pages/secrets/secrets.module').then((m) => m.SecretsPageModule),
+    canActivate: [AuthGuard],
   },
   {
     path: 'favorites',
     data: { activeIndex: 3 },
-    loadChildren: () => import('./pages/favorites/favorites.module').then( m => m.FavoritesPageModule)
+    loadChildren: () =>
+      import('./pages/favorites/favorites.module').then(
+        (m) => m.FavoritesPageModule
+      ),
+    canActivate: [AuthGuard],
   },
   {
     path: 'profile',
     data: { activeIndex: 4 },
-    loadChildren: () => import('./pages/profile/profile.module').then( m => m.ProfilePageModule)
+    loadChildren: () =>
+      import('./pages/profile/profile.module').then((m) => m.ProfilePageModule),
+    canActivate: [AuthGuard],
+  },
+  {
+    path: 'archives',
+    data: { activeIndex: 4 },
+    loadChildren: () =>
+      import('./pages/archives/archives.module').then(
+        (m) => m.ArchivesPageModule
+      ),
+    canActivate: [AuthGuard],
   },
 ];
 

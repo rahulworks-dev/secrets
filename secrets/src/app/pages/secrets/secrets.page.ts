@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ActionSheetController } from '@ionic/angular';
 import { distinctUntilChanged } from 'rxjs';
-import { collection } from 'src/app/constants/secret.constant';
+import { collection, messages } from 'src/app/constants/secret.constant';
 import { FirebaseHandlerService } from 'src/app/services/firebase-handler.service';
 import { HelperService } from 'src/app/services/helper.service';
 import { IntermediateService } from 'src/app/services/intermediate.service';
@@ -20,7 +20,8 @@ export class SecretsPage {
   folderDetails: any;
   loggedInUserDetails: any;
   secretsList!: any[];
-  noSecretText = "No Secrets Added to this Folder, Click on '+' to Add Secret";
+  noSecretText: any;
+  isAPIError = false;
   constructor(
     private route: ActivatedRoute,
     private firebaseHandlerService: FirebaseHandlerService,
@@ -33,8 +34,6 @@ export class SecretsPage {
   ) {}
 
   async ionViewDidEnter() {
-    this.loggedInUserDetails =
-      await this.helperService.getLoggedInUserDetails();
     this.readActionFromURL();
   }
 
@@ -52,50 +51,57 @@ export class SecretsPage {
   }
 
   getSelectedFolderDetails() {
+    this.secretsList = [];
+    this.isAPIError = false;
+    this.noSecretText = '';
     this.intermediateService
       .readById(this.folderId, collection.FOLDERS)
       .subscribe({
         next: (resp) => {
-          this.folderDetails = resp;
-          this.getSecrets(resp?.secrets);
+          if (resp) {
+            this.folderDetails = resp;
+            this.getSecrets(resp?.secrets);
+          } else {
+            this.noSecretText = messages.FOLDER_NOT_FOUND;
+          }
         },
         error: (err) => {
+          this.isAPIError = true;
+          this.noSecretText = messages.API_ERROR_MESSAGE;
           console.error(err);
-          this.toast.showErrorToast(
-            'Error Fetching Your Folder, Please try again later'
-          );
         },
       });
   }
 
   getSecrets(secrets: any) {
     if (secrets?.length < 1) {
-      this.secretsList = [];
+      this.noSecretText = messages.NO_SECRETS_IN_FOLDER;
       return;
     }
-    if (this.loggedInUserDetails) {
-      this.secretsList = [];
-      this.loaderService.show();
-      this.intermediateService.readAll(collection.SECRETS).subscribe({
-        next: (resp) => {
-          this.loaderService.hide();
-          if (resp?.length > 0) {
-            this.secretsList = resp.filter((item: any) =>
-              this.folderDetails?.secrets.includes(item.id)
-            );
-            this.secretsList = this.helperService.sortByTime(this.secretsList);
+    this.loaderService.show();
+    this.intermediateService.readAll(collection.SECRETS).subscribe({
+      next: (resp) => {
+        this.loaderService.hide();
+        if (resp?.length > 0) {
+          this.secretsList = resp.filter(
+            (item: any) =>
+              this.folderDetails?.secrets.includes(item.id) && !item?.isArchived
+          );
+          if (this.secretsList.length < 1) {
+            this.noSecretText = messages.NO_SECRETS_IN_FOLDER;
           } else {
-            this.secretsList = [];
+            this.secretsList = this.helperService.sortByTime(this.secretsList);
           }
-        },
-        error: (err) => {
-          console.error(err);
-        },
-      });
-    } else {
-      this.secretsList = [];
-      this.toast.showErrorToast('Logged-In User Details Not Found');
-    }
+        } else {
+          this.noSecretText = messages.NO_SECRETS;
+        }
+      },
+      error: (err) => {
+        this.isAPIError = true;
+        this.noSecretText = messages.API_ERROR_MESSAGE;
+        console.error(err);
+      },
+    });
   }
 
   async onAdd() {
