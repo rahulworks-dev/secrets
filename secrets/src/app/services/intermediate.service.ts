@@ -45,14 +45,14 @@ export class IntermediateService {
         this.loggedInUserDetails = userDetails;
       }),
       switchMap(() => this.firebaseHandlerService.readAll(collectionName)),
-      tap((item: any) => {
-        // console.log(item);
-      }),
+      tap((item: any) => {}),
       map((resp: any[]) => {
-        const filteredResp = resp.filter(
-          (item) => item?.[comparisonKey] === this.loggedInUserDetails?.id
-        );
-        // console.log('Filtered Response:', filteredResp); // Log after filtering
+        let filteredResp = resp;
+        if (comparisonKey) {
+          filteredResp = resp.filter(
+            (item) => item?.[comparisonKey] === this.loggedInUserDetails?.id
+          );
+        }
 
         return filteredResp.map((item) => {
           // Convert Firestore Timestamps to Date if they exist

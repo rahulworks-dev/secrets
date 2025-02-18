@@ -100,7 +100,7 @@ export class AddSecretPage {
     this.loaderService.show();
     const payload: Secret = {
       title: this.title,
-      secret: this.secret,
+      secret: this.secret.trim(),
       userId: this.loggedInUserDetails.id,
       createdOn: new Date(),
       folderId: this.folderId ? this.folderId : '',

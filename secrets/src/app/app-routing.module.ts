@@ -49,6 +49,13 @@ const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
+    path: 'shared',
+    data: { activeIndex: 1 },
+    loadChildren: () =>
+      import('./pages/folders/folders.module').then((m) => m.FoldersPageModule),
+    canActivate: [AuthGuard],
+  },
+  {
     path: 'move-to',
     data: { activeIndex: 1 },
     loadChildren: () =>

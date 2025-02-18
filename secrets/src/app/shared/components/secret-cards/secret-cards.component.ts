@@ -1,6 +1,6 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { arrayRemove } from '@angular/fire/firestore';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
 import { ActionSheetController, AlertController } from '@ionic/angular';
 import { collection } from 'src/app/constants/secret.constant';
 import { FirebaseHandlerService } from 'src/app/services/firebase-handler.service';
@@ -19,9 +19,11 @@ export class SecretCardsComponent implements OnInit {
   @Input() isAPIError = false;
   @Input() noSecretText: any;
   @Input() showTitle = true;
+  @Output() _fetchSecrets = new EventEmitter<any>();
   isRevealed = false;
   filteredSecrets: any[] = [];
   isArchivePage = false;
+  isSharedFolder = false;
   constructor(
     public loaderService: LoaderService,
     private router: Router,
@@ -33,13 +35,16 @@ export class SecretCardsComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.isRevealed = false;
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        this.isRevealed = false; // Reset when route changes
+      }
+    });
   }
-  
+
   ngOnChanges() {
     this.isArchivePage = this.router.url.includes('archives');
-    this.isRevealed = false;
-    console.log('SECRET-CARD', this.secrets);
+    this.isSharedFolder = this.router.url.includes('isSharedFolder');
   }
 
   onReveal() {
@@ -267,7 +272,7 @@ export class SecretCardsComponent implements OnInit {
       );
       return;
     }
-    this.loaderService.show();
+    // this.loaderService.show();
     const payload = {
       isArchived: isArchive,
     };
@@ -296,7 +301,7 @@ export class SecretCardsComponent implements OnInit {
       );
       return;
     }
-    this.loaderService.show();
+    // this.loaderService.show();
     const payload = {
       isFavorite: !secret?.isFavorite,
     };
@@ -304,14 +309,34 @@ export class SecretCardsComponent implements OnInit {
       .update(secret?.id, payload, collection.SECRETS)
       .subscribe({
         next: (resp) => {
+          // this._fetchSecrets.next(true);
+          // this.loaderService.hide();
           // this.toast.showSuccessToast('Added to Favorites');
         },
         error: (e) => {
+          // this.loaderService.hide();
           console.error(e);
           this.toast.showErrorToast(
             'Something Went Wrong, We Could not Add to favorites'
           );
         },
       });
+  }
+
+  onCopy(text: any) {
+    if (this.isRevealed) {
+      navigator.clipboard
+        .writeText(text)
+        .then(() => {
+          this.toast.showSuccessToast('Successfully Copied to Clipboard!');
+        })
+        .catch((err) => {
+          console.error('Error copying text', err);
+        });
+    }
+  }
+
+  trackById(index: number, item: any) {
+    return item.id;
   }
 }

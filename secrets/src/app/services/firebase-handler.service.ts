@@ -7,6 +7,7 @@ import {
   doc,
   docData,
   Firestore,
+  getDocs,
   Timestamp,
   updateDoc,
 } from '@angular/fire/firestore';
@@ -33,6 +34,18 @@ export class FirebaseHandlerService {
     );
   }
 
+  // readAll(collectionName: string): Promise<any[]> {
+  //   if (!this.firestore) {
+  //     console.warn('Firestore is not initialized');
+  //     return Promise.resolve([]);
+  //   }
+
+  //   const itemsCollection = collection(this.firestore, collectionName);
+  //   return getDocs(itemsCollection).then((snapshot) =>
+  //     snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+  //   );
+  // }
+
   readAll(collectionName: string): Observable<any[]> {
     if (!this.firestore) {
       console.warn('Firestore is not initialized');
@@ -42,22 +55,6 @@ export class FirebaseHandlerService {
     const itemsCollection = collection(this.firestore, collectionName);
     return collectionData(itemsCollection, { idField: 'id' });
   }
-
-  // async readAll(collectionName: string): Promise<any[]> {
-  //   if (!this.firestore) {
-  //     console.warn('Firestore is not initialized');
-  //     return [];
-  //   }
-
-  //   const itemsCollection = collection(this.firestore, collectionName);
-  //   const q = query(itemsCollection, where('userId', '==', this.loggedInUserDetails?.id));
-
-  //   const snapshot = await getDocs(q);
-  //   return snapshot.docs.map((doc) => ({
-  //     id: doc.id,
-  //     ...doc.data(),
-  //   }));
-  // }
 
   getItemById(id: string, collectionName: string): Observable<any> {
     if (!this.firestore) return of(null);

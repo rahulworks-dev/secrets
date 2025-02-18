@@ -30,12 +30,10 @@ export class FavoritesPage implements OnInit {
   }
 
   fetchSecrets() {
-    this.noSecretText = '';
-    this.isAPIError = false;
-    this.secrets = [];
     this.loaderService.show();
     this.intermediateService.readAll(collection.SECRETS).subscribe({
       next: (resp) => {
+        this.resetVariables();
         this.loaderService.hide();
         if (resp?.length > 0) {
           const filteredSecrets = resp.filter(
@@ -51,11 +49,18 @@ export class FavoritesPage implements OnInit {
         }
       },
       error: (e) => {
+        this.resetVariables();
         this.loaderService.hide();
         this.isAPIError = true;
         this.noSecretText = messages.API_ERROR_MESSAGE;
         console.error(e);
       },
     });
+  }
+
+  resetVariables() {
+    this.noSecretText = '';
+    this.isAPIError = false;
+    this.secrets = [];
   }
 }

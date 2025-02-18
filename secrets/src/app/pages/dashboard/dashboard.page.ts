@@ -36,7 +36,6 @@ export class DashboardPage {
   ) {}
 
   async ionViewDidEnter() {
-    console.log('hi');
     this.fetchSecrets();
     this.fetchFolders();
   }
@@ -74,11 +73,11 @@ export class DashboardPage {
 
   fetchFolders() {
     this.folders = [];
-    this.loaderService.show();
+    // this.loaderService.show();
 
     this.intermediateService.readAll(collection.FOLDERS).subscribe({
       next: (resp) => {
-        this.loaderService.hide();
+        // this.loaderService.hide();
         const hasFolders = Boolean(resp?.length);
         this.hasNoFolders = !hasFolders;
         this.isAPIError = false;
@@ -86,7 +85,7 @@ export class DashboardPage {
         this.folders = hasFolders ? this.helperService.sortByTime(resp) : [];
       },
       error: (e) => {
-        this.loaderService.hide();
+        // this.loaderService.hide();
         this.hasNoFolders = false;
         this.isAPIError = true;
         this.noFolderText = messages.API_ERROR_MESSAGE;

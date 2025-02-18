@@ -46,6 +46,7 @@ export class SecretsPage {
       )
       .subscribe((param: any) => {
         this.folderId = param['folderId'];
+        
         this.getSelectedFolderDetails();
       });
   }
@@ -59,6 +60,7 @@ export class SecretsPage {
       .subscribe({
         next: (resp) => {
           if (resp) {
+            console.log('resp: ', resp);
             this.folderDetails = resp;
             this.getSecrets(resp?.secrets);
           } else {
@@ -79,7 +81,7 @@ export class SecretsPage {
       return;
     }
     this.loaderService.show();
-    this.intermediateService.readAll(collection.SECRETS).subscribe({
+    this.intermediateService.readAll(collection.SECRETS, '').subscribe({
       next: (resp) => {
         this.loaderService.hide();
         if (resp?.length > 0) {

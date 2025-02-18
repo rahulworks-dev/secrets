@@ -12,6 +12,7 @@ import { ShowUserIdComponent } from './components/show-user-id/show-user-id.comp
 import { ForgotPasswordModalComponent } from './components/forgot-password-modal/forgot-password-modal.component';
 import { BottomTabComponent } from './components/bottom-tab/bottom-tab.component';
 import { DesktopSidebarComponent } from './components/desktop-sidebar/desktop-sidebar.component';
+import { ShareComponent } from './components/share/share.component';
 
 @NgModule({
   declarations: [
@@ -24,6 +25,7 @@ import { DesktopSidebarComponent } from './components/desktop-sidebar/desktop-si
     ForgotPasswordModalComponent,
     BottomTabComponent,
     DesktopSidebarComponent,
+    ShareComponent,
   ],
   imports: [CommonModule, IonicModule, FormsModule, RouterModule],
   exports: [
@@ -36,6 +38,7 @@ import { DesktopSidebarComponent } from './components/desktop-sidebar/desktop-si
     ForgotPasswordModalComponent,
     BottomTabComponent,
     DesktopSidebarComponent,
+    ShareComponent,
   ],
 })
 export class SharedModule {}

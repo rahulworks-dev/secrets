@@ -23,16 +23,33 @@ export class FoldersPage {
   isModalOpen = false;
   noFolderText: any;
   isAPIError = false;
+  activeFolderType = 'myFolders';
+  allAvailableFolders: any;
+  loggedInUserDetails: any;
+  duplicateFolders: any;
+  isShared: boolean = false;
   constructor(
     private router: Router,
     private helperService: HelperService,
     public loaderService: LoaderService,
     private intermediateService: IntermediateService,
+    private firebaseHandlerService: FirebaseHandlerService,
     private route: ActivatedRoute,
     private toast: ToastService
   ) {}
 
+  ngOnInit() {
+    this.getLoggedInUserDetails();
+  }
+
+  async getLoggedInUserDetails() {
+    this.loggedInUserDetails =
+      await this.helperService.getLoggedInUserDetails();
+  }
+
   async ionViewDidEnter() {
+    this.activeFolderType = 'myFolders';
+    this.isShared = false;
     this.fetchFolders();
     this.readActionFromURL();
   }
@@ -50,11 +67,16 @@ export class FoldersPage {
     this.noFolderText = '';
     this.folders = [];
     this.loaderService.show();
-    this.intermediateService.readAll(collection.FOLDERS).subscribe({
+    this.intermediateService.readAll(collection.FOLDERS, '').subscribe({
       next: (resp) => {
         this.loaderService.hide();
         if (resp?.length > 0) {
-          this.folders = this.helperService.sortByTime(resp);
+          this.allAvailableFolders = resp;
+          this.folders = this.allAvailableFolders?.filter(
+            (item: any) => item?.userId == this.loggedInUserDetails?.id
+          );
+          this.folders = this.helperService.sortByTime(this.folders);
+          this.duplicateFolders = this.folders;
         } else {
           this.noFolderText = messages.NO_FOLDERS;
         }
@@ -65,6 +87,21 @@ export class FoldersPage {
         this.noFolderText = messages.API_ERROR_MESSAGE;
       },
     });
+  }
+
+  onFolderType(folderType: any) {
+    this.activeFolderType = folderType;
+    if (this.activeFolderType === 'myFolders') {
+      this.folders = this.duplicateFolders;
+      this.isShared = false;
+      // this.router.navigateByUrl('/my-folders');
+    } else {
+      this.isShared = true;
+      this.folders = this.allAvailableFolders.filter(
+        (item: any) => item?.sharedTo == this.loggedInUserDetails.id
+      );
+      // this.router.navigateByUrl('/shared');
+    }
   }
 
   onAdd() {
@@ -101,7 +138,9 @@ export class FoldersPage {
         });
     } else {
       this.loaderService.hide();
-      const URL = `/folder?folderId=${folder?.id}&name=${folder?.folderName}`;
+      const URL = `/folder?folderId=${folder?.id}&name=${
+        folder?.folderName
+      }&isSharedFolder=${this.activeFolderType === 'shared' ? true : false}`;
       this.router.navigateByUrl(URL);
     }
   }

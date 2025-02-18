@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Router } from '@angular/router';
 import { ActionSheetController, AlertController } from '@ionic/angular';
 import { collection } from 'src/app/constants/secret.constant';
 import { FirebaseHandlerService } from 'src/app/services/firebase-handler.service';
@@ -17,6 +18,7 @@ export class FoldersComponent implements OnInit {
   @Input() showHeader = true;
   @Input() noFolderText: any;
   @Input() isAPIError = false;
+  @Input() isShared = false;
   @Output() onFolderSelection = new EventEmitter<any>();
   @Output() _fetchFolders = new EventEmitter<any>();
   @Output() onNewFolder = new EventEmitter<any>();
@@ -24,12 +26,14 @@ export class FoldersComponent implements OnInit {
   isColorModalOpen = false;
   selectedFolder: any;
   finalFolders: any[] = [];
+  isShareModalOpen = false;
   constructor(
     private actionSheet: ActionSheetController,
     private toast: ToastService,
     public loaderService: LoaderService,
     private firebaseService: FirebaseHandlerService,
-    private alertCtrl: AlertController
+    private alertCtrl: AlertController,
+    private router: Router
   ) {}
 
   ngOnInit() {}
@@ -74,6 +78,14 @@ export class FoldersComponent implements OnInit {
           handler: () => {
             this.selectedFolder = folder;
             this.isColorModalOpen = true;
+          },
+        },
+        {
+          text: 'Share',
+          cssClass: 'icon',
+          handler: () => {
+            this.selectedFolder = folder;
+            this.isShareModalOpen = true;
           },
         },
         {
@@ -137,5 +149,9 @@ export class FoldersComponent implements OnInit {
         this.toast.showSuccessToast('Successfully Deleted Folder');
         this._fetchFolders.next(true);
       });
+  }
+
+  trackById(index: number, item: any) {
+    return item.id;
   }
 }
