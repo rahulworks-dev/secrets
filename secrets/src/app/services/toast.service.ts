@@ -14,6 +14,7 @@ export class ToastService {
       color: 'danger',
       icon: 'bug',
       position: 'top',
+      cssClass: 'custom-toast'
     });
 
     await toast.present();

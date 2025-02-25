@@ -75,6 +75,8 @@ export class ForgotPasswordModalComponent implements OnInit {
             }
           },
         });
+    } else {
+      this.toast.showErrorToast('Please Enter Username & Security Id.')
     }
   }
 

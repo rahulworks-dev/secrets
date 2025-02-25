@@ -8,6 +8,7 @@ import { LoginPageRoutingModule } from './login-routing.module';
 
 import { LoginPage } from './login.page';
 import { SharedModule } from 'src/app/shared/shared.module';
+import { AdvertiseComponent } from './components/advertise/advertise.component';
 
 @NgModule({
   imports: [
@@ -15,8 +16,8 @@ import { SharedModule } from 'src/app/shared/shared.module';
     FormsModule,
     IonicModule,
     LoginPageRoutingModule,
-    SharedModule
+    SharedModule,
   ],
-  declarations: [LoginPage]
+  declarations: [LoginPage, AdvertiseComponent],
 })
 export class LoginPageModule {}

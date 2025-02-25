@@ -7,6 +7,7 @@ import {
   LoginCred,
   storage,
 } from 'src/app/constants/secret.constant';
+import { signup } from 'src/app/models/secret.interface';
 import { FirebaseHandlerService } from 'src/app/services/firebase-handler.service';
 import { IntermediateService } from 'src/app/services/intermediate.service';
 import { LoaderService } from 'src/app/services/loader.service';
@@ -94,6 +95,8 @@ export class LoginPage implements OnInit {
         console.error(error);
         this.toast.showErrorToast('Something went wrong!');
       }
+    } else {
+      this.toast.showErrorToast('Please enter Username & Password to Login');
     }
   }
 
@@ -159,9 +162,10 @@ export class LoginPage implements OnInit {
 
   signup() {
     if (this.isSignUpValid()) {
-      const data = {
+      const data: signup = {
         username: this.username,
         password: this.password,
+        createdOn: new Date(),
       };
       this.loaderService.show();
       this.intermediateService.create(data, collection.USERS).subscribe({
@@ -192,7 +196,7 @@ export class LoginPage implements OnInit {
       } else if (!this.isUserNameValid) {
         this.toast.showErrorToast('Username already taken');
       } else if (this.password.length < 5) {
-        this.toast.showErrorToast('Password cannot be less than 4 characters');
+        this.toast.showErrorToast('Password cannot be less than 5 characters');
       } else if (this.password !== this.confirmPassword) {
         this.toast.showErrorToast(
           'Password & Confirm Password are not matching'
@@ -209,5 +213,12 @@ export class LoginPage implements OnInit {
 
   forgotPassword() {
     this.isForgotPasswordModalOpen = true;
+  }
+
+  scrollToAdvertise() {
+    const element = document.getElementById('advertise');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 }
