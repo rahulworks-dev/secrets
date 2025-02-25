@@ -81,11 +81,17 @@ export class FoldersComponent implements OnInit {
           },
         },
         {
-          text: 'Share',
+          text: folder?.sharedTo?.length > 0 ? 'Manage Access' : 'Share',
           cssClass: 'icon',
           handler: () => {
-            this.selectedFolder = folder;
-            this.isShareModalOpen = true;
+            if (folder?.sharedTo?.length > 0) {
+              this.router.navigateByUrl(
+                '/manage-access?folderId=' + folder?.id
+              );
+            } else {
+              this.selectedFolder = folder;
+              this.isShareModalOpen = true;
+            }
           },
         },
         {

@@ -17,7 +17,7 @@ export const bottomTabs = [
   },
   {
     name: 'Folders',
-    route: 'my-folders',
+    route: 'folders?tab=myFolders',
     icon: 'folder-open-outline',
     iconActive: 'folder-open',
     active: false,
@@ -59,8 +59,9 @@ export const profileExtrasOne = [
 
 export const profileExtrasTwo = [
   {
-    name: 'About us',
+    name: 'About Secrets',
     icon: 'people',
+    route: 'about-secrets',
   },
   {
     name: 'Help',
@@ -69,6 +70,7 @@ export const profileExtrasTwo = [
   {
     name: 'Feedback',
     icon: 'mail',
+    route : 'feedback'
   },
   {
     name: 'Sign out',

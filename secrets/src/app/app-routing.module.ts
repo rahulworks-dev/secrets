@@ -33,6 +33,15 @@ const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
+    path: 'view-secret',
+    data: { activeIndex: 0 },
+    loadChildren: () =>
+      import('./pages/add-secret/add-secret.module').then(
+        (m) => m.AddSecretPageModule
+      ),
+    canActivate: [AuthGuard],
+  },
+  {
     path: 'dashboard',
     data: { activeIndex: 0 },
     loadChildren: () =>
@@ -42,14 +51,7 @@ const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
-    path: 'my-folders',
-    data: { activeIndex: 1 },
-    loadChildren: () =>
-      import('./pages/folders/folders.module').then((m) => m.FoldersPageModule),
-    canActivate: [AuthGuard],
-  },
-  {
-    path: 'shared',
+    path: 'folders',
     data: { activeIndex: 1 },
     loadChildren: () =>
       import('./pages/folders/folders.module').then((m) => m.FoldersPageModule),
@@ -93,6 +95,43 @@ const routes: Routes = [
         (m) => m.ArchivesPageModule
       ),
     canActivate: [AuthGuard],
+  },
+  {
+    path: 'manage-access',
+    data: { activeIndex: 1 },
+    loadChildren: () =>
+      import('./pages/manage-access/manage-access.module').then(
+        (m) => m.ManageAccessPageModule
+      ),
+    canActivate: [AuthGuard],
+  },
+  {
+    path: 'notifications',
+    data: { activeIndex: 0 },
+    loadChildren: () =>
+      import('./pages/notifications/notifications.module').then(
+        (m) => m.NotificationsPageModule
+      ),
+    canActivate: [AuthGuard],
+    
+  },
+  {
+    path: 'about-secrets',
+    data: { activeIndex: 4 },
+    loadChildren: () =>
+      import('./pages/about-secrets/about-secrets.module').then(
+        (m) => m.AboutSecretsPageModule
+      ),
+  },
+  {
+    path: 'feedback',
+    data: { activeIndex: 4 },
+    loadChildren: () =>
+      import('./pages/feedback/feedback.module').then(
+        (m) => m.FeedbackPageModule
+      ),
+    canActivate: [AuthGuard],
+    
   },
 ];
 

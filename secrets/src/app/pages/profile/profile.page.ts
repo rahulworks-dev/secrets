@@ -12,7 +12,7 @@ import { ToastService } from 'src/app/services/toast.service';
   styleUrls: ['./profile.page.scss'],
   standalone: false,
 })
-export class ProfilePage implements OnInit {
+export class ProfilePage {
   profileExtrasOne = profileExtrasOne;
   profileExtrasTwo = profileExtrasTwo;
   isModalOpen = false;
@@ -25,7 +25,7 @@ export class ProfilePage implements OnInit {
     private helperService: HelperService
   ) {}
 
-  ngOnInit() {
+  ionViewDidEnter() {
     this.getLoggedInUserDetails();
   }
 
@@ -47,7 +47,7 @@ export class ProfilePage implements OnInit {
   onProfileExtra(extra: any) {
     if (extra?.name === 'Sign out') {
       this.logout();
-    } else if (extra?.name === 'Archives') {
+    } else if (extra?.route) {
       this.router.navigateByUrl(extra?.route);
     } else {
       this.toast.showInfoToast('Coming Soon!');

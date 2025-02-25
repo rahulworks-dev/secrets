@@ -44,7 +44,7 @@ export class SecretCardsComponent implements OnInit {
 
   ngOnChanges() {
     this.isArchivePage = this.router.url.includes('archives');
-    this.isSharedFolder = this.router.url.includes('isSharedFolder');
+    this.isSharedFolder = this.router.url.includes('isSharedFolder=true');
   }
 
   onReveal() {
@@ -169,13 +169,15 @@ export class SecretCardsComponent implements OnInit {
   async deleteSecret(secret: any) {
     this.loaderService.show();
     try {
-      await this.firebaseHandlerService.deleteItem(
-        secret?.id,
-        collection.SECRETS
-      );
-      if (secret?.folderId) {
-        this.removeSecretIdInFolderAsWell(secret);
-      }
+      await this.firebaseHandlerService
+        .deleteItem(secret?.id, collection.SECRETS)
+        .then(() => {
+          if (secret?.folderId) {
+            this.removeSecretIdInFolderAsWell(secret);
+          } else {
+            this.toast.showSuccessToast('Deleted Successfully');
+          }
+        });
     } catch (err) {
       console.error('Error deleting item', err);
     } finally {
@@ -245,6 +247,12 @@ export class SecretCardsComponent implements OnInit {
           text: 'Archive',
           handler: () => {
             this.archive(secret);
+          },
+        },
+        {
+          text: 'View in Full Screen',
+          handler: () => {
+            this.router.navigateByUrl(`/view-secret?id=${secret?.id}`);
           },
         },
         {

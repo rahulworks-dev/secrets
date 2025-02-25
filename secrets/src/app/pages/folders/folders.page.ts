@@ -28,6 +28,7 @@ export class FoldersPage {
   loggedInUserDetails: any;
   duplicateFolders: any;
   isShared: boolean = false;
+  activeTabFromURL = 'myFolders';
   constructor(
     private router: Router,
     private helperService: HelperService,
@@ -48,10 +49,10 @@ export class FoldersPage {
   }
 
   async ionViewDidEnter() {
-    this.activeFolderType = 'myFolders';
+    // this.activeFolderType = 'myFolders';
     this.isShared = false;
-    this.fetchFolders();
     this.readActionFromURL();
+    this.fetchFolders();
   }
 
   readActionFromURL() {
@@ -59,24 +60,36 @@ export class FoldersPage {
       this.action = param['action'];
       this.secretId = param['secretId'];
       this.existingFolderId = param['existingFolderId'];
+      this.activeTabFromURL = param['tab'] || 'myFolders';
     });
   }
 
   async fetchFolders() {
-    this.isAPIError = false;
-    this.noFolderText = '';
+    console.log(this.loggedInUserDetails);
     this.folders = [];
     this.loaderService.show();
     this.intermediateService.readAll(collection.FOLDERS, '').subscribe({
       next: (resp) => {
+        this.isAPIError = false;
+        this.noFolderText = '';
         this.loaderService.hide();
         if (resp?.length > 0) {
           this.allAvailableFolders = resp;
-          this.folders = this.allAvailableFolders?.filter(
-            (item: any) => item?.userId == this.loggedInUserDetails?.id
-          );
-          this.folders = this.helperService.sortByTime(this.folders);
+          this.folders =
+            this.allAvailableFolders?.filter(
+              (item: any) => item?.userId == this.loggedInUserDetails?.id
+            ) || [];
           this.duplicateFolders = this.folders;
+
+          if (this.activeTabFromURL === 'myFolders') {
+            if (this.folders?.length > 0) {
+              this.folders = this.helperService.sortByTime(this.folders);
+            } else {
+              this.noFolderText = messages.NO_FOLDERS;
+            }
+          } else {
+            this.onFolderType(this.activeTabFromURL);
+          }
         } else {
           this.noFolderText = messages.NO_FOLDERS;
         }
@@ -90,17 +103,35 @@ export class FoldersPage {
   }
 
   onFolderType(folderType: any) {
+    if (this.action) {
+      this.toast.showErrorToast('You cannot move to the shared folder!');
+      return;
+    }
     this.activeFolderType = folderType;
     if (this.activeFolderType === 'myFolders') {
+      this.router.navigateByUrl('/folders?tab=myFolders', { replaceUrl: true });
       this.folders = this.duplicateFolders;
       this.isShared = false;
-      // this.router.navigateByUrl('/my-folders');
+      if (this.folders?.length < 1) {
+        this.noFolderText = messages.NO_FOLDERS;
+      } else {
+        this.noFolderText = '';
+      }
     } else {
+      this.router.navigateByUrl('/folders?tab=shared', {
+        replaceUrl: true,
+      });
       this.isShared = true;
       this.folders = this.allAvailableFolders.filter(
-        (item: any) => item?.sharedTo == this.loggedInUserDetails.id
+        (folder: any) =>
+          Array.isArray(folder.sharedTo) &&
+          folder.sharedTo.some(
+            (user: any) => user.id === this.loggedInUserDetails.id
+          )
       );
-      // this.router.navigateByUrl('/shared');
+      if (this.folders.length < 1) {
+        this.noFolderText = messages.NO_SHARED_FOLDER;
+      }
     }
   }
 

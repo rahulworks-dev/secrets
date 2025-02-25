@@ -13,6 +13,7 @@ import { ForgotPasswordModalComponent } from './components/forgot-password-modal
 import { BottomTabComponent } from './components/bottom-tab/bottom-tab.component';
 import { DesktopSidebarComponent } from './components/desktop-sidebar/desktop-sidebar.component';
 import { ShareComponent } from './components/share/share.component';
+import { AutofocusDirective } from '../directives/autofocus.directive';
 
 @NgModule({
   declarations: [
@@ -26,6 +27,9 @@ import { ShareComponent } from './components/share/share.component';
     BottomTabComponent,
     DesktopSidebarComponent,
     ShareComponent,
+
+    // Directives
+    AutofocusDirective,
   ],
   imports: [CommonModule, IonicModule, FormsModule, RouterModule],
   exports: [
@@ -39,6 +43,9 @@ import { ShareComponent } from './components/share/share.component';
     BottomTabComponent,
     DesktopSidebarComponent,
     ShareComponent,
+
+    // Directives
+    AutofocusDirective
   ],
 })
 export class SharedModule {}

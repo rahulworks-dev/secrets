@@ -1,3 +1,9 @@
+export interface signup {
+  name?: string;
+  username: string;
+  password: string;
+  createdOn: Date;
+}
 export interface Secret {
   title: string;
   secret: string;
@@ -14,5 +20,16 @@ export interface Folder {
   folderName: string;
   folderColor: string;
   secrets: string[];
+  sharedTo: object[];
   createdOn: Date;
+}
+
+export interface Notification {
+  recipientId: string;
+  senderId: string;
+  folderId: string;
+  message: string;
+  isRead: boolean;
+  createdOn: Date;
+  redirectTo: string;
 }

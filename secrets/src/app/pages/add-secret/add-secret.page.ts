@@ -1,3 +1,4 @@
+import { Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { arrayUnion } from '@angular/fire/firestore';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -31,19 +32,22 @@ export class AddSecretPage {
   loggedInUserDetails: any;
   folderId: any;
   isSaveButtonDisabled = false;
+  isViewSecret = false;
   constructor(
     private router: Router,
     private intermediateService: IntermediateService,
     private toast: ToastService,
     private loaderService: LoaderService,
     private helperService: HelperService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private location : Location
   ) {}
 
   async ionViewDidEnter() {
     this.isSaveButtonDisabled = false;
     this.loggedInUserDetails =
       await this.helperService.getLoggedInUserDetails();
+    this.isViewSecret = this.router.url.includes('view-secret');
     this.route.queryParams.subscribe((params) => {
       this.secretId = params['id'];
       this.folderId = params['folderId'];
@@ -171,7 +175,7 @@ export class AddSecretPage {
           next: () => {
             this.isSaveButtonDisabled = false;
             this.loaderService.hide();
-            this.router.navigateByUrl('/dashboard');
+            this.location.back();
           },
           error: (err) => {
             console.error(err);

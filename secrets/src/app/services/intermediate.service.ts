@@ -55,12 +55,23 @@ export class IntermediateService {
         }
 
         return filteredResp.map((item) => {
-          // Convert Firestore Timestamps to Date if they exist
           if (item.createdOn instanceof Timestamp) {
-            item.createdOn = item.createdOn.toDate();
+            item['createdOnWithoutFormat'] = item.createdOn.toDate();
+            item.createdOn = this.helperService.formatDate(
+              item.createdOn,
+              collectionName === 'notifications' ? '' : 'Created'
+            );
+            //   item.createdOn = this.helperService.formatDate(
+            //     Timestamp.fromDate(new Date(2025, 1, 23, 0, 0)),
+            //     'Created'
+            //   );
           }
           if (item.lastUpdatedOn instanceof Timestamp) {
-            item.lastUpdatedOn = item.lastUpdatedOn.toDate();
+            item['lastUpdatedOnWithoutFormat'] = item.lastUpdatedOn.toDate();
+            item.lastUpdatedOn = this.helperService.formatDate(
+              item.lastUpdatedOn,
+              'Last Updated'
+            );
           }
 
           // Decrypt secret if it exists
@@ -79,15 +90,21 @@ export class IntermediateService {
       map((item: any) => {
         if (!item) return null;
 
-        // Convert Firestore Timestamps to Date if they exist
         if (item.createdOn instanceof Timestamp) {
-          item.createdOn = item.createdOn.toDate();
+          item['createdOnWithoutFormat'] = item.createdOn.toDate();
+          item.createdOn = this.helperService.formatDate(
+            item.createdOn,
+            collectionName === 'notifications' ? '' : 'Created'
+          );
         }
         if (item.lastUpdatedOn instanceof Timestamp) {
-          item.lastUpdatedOn = item.lastUpdatedOn.toDate();
+          item['lastUpdatedOnWithoutFormat'] = item.lastUpdatedOn.toDate();
+          item.lastUpdatedOn = this.helperService.formatDate(
+            item.lastUpdatedOn,
+            'Last Updated'
+          );
         }
 
-        // Decrypt secret if it exists
         if (item.secret) {
           item.secret = this.cryptoService.decrypt(item.secret);
         }

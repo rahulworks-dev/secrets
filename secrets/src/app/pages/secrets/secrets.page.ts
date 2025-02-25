@@ -1,4 +1,6 @@
+import { Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { arrayRemove } from '@angular/fire/firestore';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ActionSheetController } from '@ionic/angular';
 import { distinctUntilChanged } from 'rxjs';
@@ -22,6 +24,9 @@ export class SecretsPage {
   secretsList!: any[];
   noSecretText: any;
   isAPIError = false;
+  isShareModalOpen = false;
+  isShared = 'true';
+  sharedBy: any;
   constructor(
     private route: ActivatedRoute,
     private firebaseHandlerService: FirebaseHandlerService,
@@ -30,10 +35,13 @@ export class SecretsPage {
     private toast: ToastService,
     private intermediateService: IntermediateService,
     private actionSheet: ActionSheetController,
-    private router: Router
+    private router: Router,
+    private location: Location
   ) {}
 
   async ionViewDidEnter() {
+    this.loggedInUserDetails =
+      await this.helperService.getLoggedInUserDetails();
     this.readActionFromURL();
   }
 
@@ -46,7 +54,11 @@ export class SecretsPage {
       )
       .subscribe((param: any) => {
         this.folderId = param['folderId'];
-        
+        this.isShared = param['isSharedFolder'];
+        if (!this.isShared) {
+          this.isShared = 'false';
+        }
+
         this.getSelectedFolderDetails();
       });
   }
@@ -59,10 +71,20 @@ export class SecretsPage {
       .readById(this.folderId, collection.FOLDERS)
       .subscribe({
         next: (resp) => {
+          console.log('resp: ', resp);
           if (resp) {
-            console.log('resp: ', resp);
             this.folderDetails = resp;
-            this.getSecrets(resp?.secrets);
+            if (this.isShared === 'true') {
+              this.getFolderOwnerDetails();
+            }
+            if (resp?.secrets?.length < 1) {
+              this.noSecretText =
+                this.isShared === 'false'
+                  ? messages.NO_SECRETS_IN_FOLDER
+                  : messages.NO_SECRETS_IN_SHARED_FOLDER;
+            } else {
+              this.getSecrets(resp?.secrets);
+            }
           } else {
             this.noSecretText = messages.FOLDER_NOT_FOUND;
           }
@@ -76,10 +98,6 @@ export class SecretsPage {
   }
 
   getSecrets(secrets: any) {
-    if (secrets?.length < 1) {
-      this.noSecretText = messages.NO_SECRETS_IN_FOLDER;
-      return;
-    }
     this.loaderService.show();
     this.intermediateService.readAll(collection.SECRETS, '').subscribe({
       next: (resp) => {
@@ -90,7 +108,10 @@ export class SecretsPage {
               this.folderDetails?.secrets.includes(item.id) && !item?.isArchived
           );
           if (this.secretsList.length < 1) {
-            this.noSecretText = messages.NO_SECRETS_IN_FOLDER;
+            this.noSecretText =
+              this.isShared === 'false'
+                ? messages.NO_SECRETS_IN_FOLDER
+                : messages.NO_SECRETS_IN_SHARED_FOLDER;
           } else {
             this.secretsList = this.helperService.sortByTime(this.secretsList);
           }
@@ -106,27 +127,48 @@ export class SecretsPage {
     });
   }
 
-  async onAdd() {
-    const actionSheet = await this.actionSheet.create({
-      header: '',
-      buttons: [
-        {
-          text: 'Add Secret',
-          handler: () => {
-            this.router.navigateByUrl('/add-secret?folderId=' + this.folderId);
-          },
+  getFolderOwnerDetails() {
+    this.intermediateService
+      .readById(this.folderDetails.userId, collection.USERS)
+      .subscribe({
+        next: (resp) => {
+          this.sharedBy = resp;
+          console.log(resp);
         },
-        {
-          text: 'Cancel',
-          role: 'cancel',
-          data: {
-            action: 'cancel',
-          },
-        },
-      ],
-      cssClass: 'custom-action-sheet',
-    });
+      });
+  }
 
-    await actionSheet.present();
+  onAdd() {
+    this.router.navigateByUrl('/add-secret?folderId=' + this.folderId);
+  }
+
+  onManageAccess() {
+    this.router.navigateByUrl(
+      '/manage-access?folderId=' + this.folderDetails?.id
+    );
+  }
+
+  onAddPeople() {
+    this.isShareModalOpen = true;
+  }
+
+  async leaveFolder() {
+    const payload = {
+      sharedTo: arrayRemove({
+        id: this.loggedInUserDetails?.id,
+        username: this.loggedInUserDetails?.username,
+      }),
+    };
+    this.intermediateService
+      .update(this.folderDetails?.id, payload, collection.FOLDERS)
+      .subscribe({
+        next: () => {
+          this.toast.showErrorToast(
+            `Successfully Left the folder ${this.folderDetails?.folderName} Shared by ${this.sharedBy?.username}`
+          );
+          this.location.back();
+          // this.router.navigateByUrl('/folders');
+        },
+      });
   }
 }

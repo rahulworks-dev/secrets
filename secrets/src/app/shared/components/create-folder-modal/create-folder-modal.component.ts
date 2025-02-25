@@ -62,7 +62,7 @@ export class CreateFolderModalComponent implements OnInit {
 
       if (this.folderName.length > 20) {
         this.toast.showErrorToast(
-          'Username cannot contain more than 20 Characters'
+          'Folder name cannot contain more than 20 Characters'
         );
       } else if (!/^[A-Za-z0-9 ]+$/.test(this.folderName)) {
         this.toast.showErrorToast('Username cannot contain special characters');
@@ -106,6 +106,7 @@ export class CreateFolderModalComponent implements OnInit {
       folderName: this.folderName,
       folderColor: this.getRandomColor(),
       secrets: [],
+      sharedTo : [],
       createdOn: new Date(),
     };
     this.loaderService.show();
