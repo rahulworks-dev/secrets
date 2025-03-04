@@ -2,7 +2,9 @@ export interface signup {
   name?: string;
   username: string;
   password: string;
+  fullname: string;
   createdOn: Date;
+  avatar: string;
 }
 export interface Secret {
   title: string;
@@ -32,4 +34,9 @@ export interface Notification {
   isRead: boolean;
   createdOn: Date;
   redirectTo: string;
+}
+
+export interface sortingPreference {
+  sortingPreferenceType: number;
+  sortingPreferenceOrder: 1 | -1;
 }

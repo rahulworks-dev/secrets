@@ -96,7 +96,7 @@ export class ManageAccessPage implements OnInit {
       .subscribe({
         next: (resp) => {
           this.toast.showSuccessToast(
-            `${user?.username} no longer has access to this folder.`
+            `${user?.fullname} no longer has access to this folder.`
           );
         },
       });

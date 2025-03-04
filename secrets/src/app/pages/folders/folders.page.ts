@@ -1,7 +1,14 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { arrayRemove, doc, Firestore, getDoc } from '@angular/fire/firestore';
+import {
+  arrayRemove,
+  arrayUnion,
+  doc,
+  Firestore,
+  getDoc,
+} from '@angular/fire/firestore';
 import { ActivatedRoute, Router } from '@angular/router';
 import { collection, messages } from 'src/app/constants/secret.constant';
+import { AdvancedFirebaseHandlerService } from 'src/app/services/advanced-firebase-handler.service';
 import { FirebaseHandlerService } from 'src/app/services/firebase-handler.service';
 import { HelperService } from 'src/app/services/helper.service';
 import { IntermediateService } from 'src/app/services/intermediate.service';
@@ -35,12 +42,19 @@ export class FoldersPage {
     public loaderService: LoaderService,
     private intermediateService: IntermediateService,
     private firebaseHandlerService: FirebaseHandlerService,
+    private advancedFirebaseHandlerService : AdvancedFirebaseHandlerService,
     private route: ActivatedRoute,
     private toast: ToastService
   ) {}
 
-  ngOnInit() {
+  ngOnInit() {}
+
+  async ionViewDidEnter() {
+    // this.activeFolderType = 'myFolders';
     this.getLoggedInUserDetails();
+    this.isShared = false;
+    this.readActionFromURL();
+    this.fetchFolders();
   }
 
   async getLoggedInUserDetails() {
@@ -48,28 +62,20 @@ export class FoldersPage {
       await this.helperService.getLoggedInUserDetails();
   }
 
-  async ionViewDidEnter() {
-    // this.activeFolderType = 'myFolders';
-    this.isShared = false;
-    this.readActionFromURL();
-    this.fetchFolders();
-  }
-
   readActionFromURL() {
     this.route.queryParams.subscribe((param: any) => {
       this.action = param['action'];
       this.secretId = param['secretId'];
-      this.existingFolderId = param['existingFolderId'];
+      this.existingFolderId = param['existingFolderId'] || '';
       this.activeTabFromURL = param['tab'] || 'myFolders';
     });
   }
 
   async fetchFolders() {
-    console.log(this.loggedInUserDetails);
-    this.folders = [];
     this.loaderService.show();
     this.intermediateService.readAll(collection.FOLDERS, '').subscribe({
       next: (resp) => {
+        this.folders = [];
         this.isAPIError = false;
         this.noFolderText = '';
         this.loaderService.hide();
@@ -83,7 +89,6 @@ export class FoldersPage {
 
           if (this.activeTabFromURL === 'myFolders') {
             if (this.folders?.length > 0) {
-              this.folders = this.helperService.sortByTime(this.folders);
             } else {
               this.noFolderText = messages.NO_FOLDERS;
             }
@@ -135,12 +140,6 @@ export class FoldersPage {
     }
   }
 
-  onAdd() {
-    // this.secrets = this.originalSecrets;
-    // this.revealText = 'Reveal All';
-    this.router.navigateByUrl('/add-secret');
-  }
-
   onSelectingFolder(folder: any) {
     if (this.secretId) {
       if (folder.secrets.includes(this.secretId)) {
@@ -148,24 +147,20 @@ export class FoldersPage {
         return;
       }
 
-      const payload = {
-        secrets: [...folder.secrets, this.secretId],
-      };
-
       this.loaderService.show();
-      this.intermediateService
-        .update(folder?.id, payload, collection.FOLDERS)
-        .subscribe({
-          next: () => {
-            this.updateFolderIdInSecret(folder);
-          },
-          error: (err) => {
-            console.error(err);
-            this.loaderService.hide();
-            this.toast.showErrorToast(
-              'Error Moving secrets to destination folder'
-            );
-          },
+      this.advancedFirebaseHandlerService
+        .moveSecret(folder?.id, this.secretId, this.existingFolderId)
+        .then(() => {
+          this.toast.showSuccessToast(
+            'Successfully Moved to ' + folder?.folderName
+          );
+          const URL = `/folder?folderId=${folder?.id}`;
+          this.router.navigateByUrl(URL);
+        })
+        .catch((e) => {
+          console.error(e);
+          this.loaderService.hide();
+          this.toast.showErrorToast('System Error');
         });
     } else {
       this.loaderService.hide();
@@ -174,68 +169,6 @@ export class FoldersPage {
       }&isSharedFolder=${this.activeFolderType === 'shared' ? true : false}`;
       this.router.navigateByUrl(URL);
     }
-  }
-
-  updateFolderIdInSecret(folder: any) {
-    const payload = {
-      folderId: folder.id,
-    };
-    this.loaderService.show();
-    this.intermediateService
-      .update(this.secretId, payload, collection.SECRETS)
-      .subscribe({
-        next: () => {
-          if (this.existingFolderId) {
-            this.updatePreviousFolderSecretsArray(folder);
-          } else {
-            this.showSuccessMsg(folder);
-          }
-        },
-        error: (err) => {
-          console.error(err);
-          this.toast.showErrorToast(
-            'Error Moving secrets to destination folder'
-          );
-        },
-      });
-  }
-
-  async updatePreviousFolderSecretsArray(folder: any) {
-    const payload = {
-      secrets: arrayRemove(this.secretId),
-    };
-
-    // Check if Previous Folder exists
-
-    const folderDocRef = doc(
-      this.firestore,
-      collection.FOLDERS,
-      this.existingFolderId
-    );
-    const folderSnapshot = await getDoc(folderDocRef);
-
-    if (!folderSnapshot.exists()) {
-      console.warn('Folder does not exist in the database. Skipping update.');
-      this.showSuccessMsg(folder);
-      return;
-    }
-
-    this.intermediateService
-      .update(this.existingFolderId, payload, collection.FOLDERS)
-      .subscribe({
-        next: (resp) => {
-          this.showSuccessMsg(folder);
-        },
-        error: (err) => {
-          console.error(err);
-        },
-      });
-  }
-
-  showSuccessMsg(folder: any) {
-    this.toast.showSuccessToast('Successfully Moved to ' + folder?.folderName);
-    const URL = `/folder?folderId=${folder?.id}&name=${folder?.folderName}`;
-    this.router.navigateByUrl(URL);
   }
 
   onNewFolder() {

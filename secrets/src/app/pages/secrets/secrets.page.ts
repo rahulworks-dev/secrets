@@ -64,14 +64,14 @@ export class SecretsPage {
   }
 
   getSelectedFolderDetails() {
-    this.secretsList = [];
-    this.isAPIError = false;
-    this.noSecretText = '';
     this.intermediateService
       .readById(this.folderId, collection.FOLDERS)
       .subscribe({
         next: (resp) => {
           console.log('resp: ', resp);
+          this.secretsList = [];
+          this.isAPIError = false;
+          this.noSecretText = '';
           if (resp) {
             this.folderDetails = resp;
             if (this.isShared === 'true') {
@@ -113,7 +113,7 @@ export class SecretsPage {
                 ? messages.NO_SECRETS_IN_FOLDER
                 : messages.NO_SECRETS_IN_SHARED_FOLDER;
           } else {
-            this.secretsList = this.helperService.sortByTime(this.secretsList);
+            // this.secretsList = this.helperService.sortByTime(this.secretsList);
           }
         } else {
           this.noSecretText = messages.NO_SECRETS;
@@ -157,6 +157,8 @@ export class SecretsPage {
       sharedTo: arrayRemove({
         id: this.loggedInUserDetails?.id,
         username: this.loggedInUserDetails?.username,
+        avatar: this.loggedInUserDetails?.avatar,
+        fullname: this.loggedInUserDetails?.fullname,
       }),
     };
     this.intermediateService

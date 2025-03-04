@@ -13,6 +13,7 @@ export const collection = {
 
 export const storage = {
   IS_LOGGED_IN: 'IS_LOGGED_IN',
+  SELECTED_SORT : 'SELECTED_SORT'
 };
 
 export const messages = {
@@ -26,4 +27,5 @@ export const messages = {
   NO_ARCHIVES: 'No secrets have been added to Archive yet.',
   NO_SHARED_FOLDER: 'No folders have been shared with you yet.',
   NO_NOTIFICATION_TEXT: 'There are no Notifications for you',
+  NO_SECRETS_FOUND_ON_SEARCH : 'Looks like there are no secrets matching your search.'
 };

@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
@@ -17,6 +17,7 @@ import { AdvertiseComponent } from './components/advertise/advertise.component';
     IonicModule,
     LoginPageRoutingModule,
     SharedModule,
+    ReactiveFormsModule
   ],
   declarations: [LoginPage, AdvertiseComponent],
 })

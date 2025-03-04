@@ -44,7 +44,6 @@ export class ShareComponent implements OnInit {
 
   ngOnInit() {
     this.presentingElement = document.querySelector('.dashboard');
-    this.fetchLoggedInUserDetails();
   }
 
   async fetchLoggedInUserDetails() {
@@ -63,6 +62,7 @@ export class ShareComponent implements OnInit {
   }
 
   ngOnChanges(changes: SimpleChanges) {
+    this.fetchLoggedInUserDetails();
     this.noResultsFound = false;
     this.filteredUsers = [];
     this.shareTo = [];
@@ -114,7 +114,7 @@ export class ShareComponent implements OnInit {
         this.selectedFolder.sharedTo.some((u: any) => u.id === user.id)
       ) {
         this.toast.showErrorToast(
-          `${user?.username} already has access to this folder!`
+          `${user?.fullname} already has access to this folder!`
         );
       } else if (this.shareTo.some((u: any) => u.id === user.id)) {
         this.toast.showErrorToast('This user has been already selected');
@@ -124,7 +124,9 @@ export class ShareComponent implements OnInit {
         );
       } else {
         this.shareTo.push({
+          fullname: user?.fullname,
           username: user?.username,
+          avatar: user?.avatar,
           id: user?.id,
         });
       }
@@ -137,7 +139,7 @@ export class ShareComponent implements OnInit {
 
   share() {
     const notifyUsers = this.shareTo;
-    let grantedUsers: any = this.shareTo.map((item: any) => item?.username);
+    let grantedUsers: any = this.shareTo.map((item: any) => item?.fullname);
     grantedUsers =
       grantedUsers?.length > 2
         ? grantedUsers.slice(0, -1).join(', ') + ' & ' + grantedUsers.slice(-1)
@@ -175,7 +177,7 @@ export class ShareComponent implements OnInit {
       recipientId: user.id,
       senderId: this.loggedInUserDetails.id,
       folderId: this.selectedFolder?.id,
-      message: `${this.loggedInUserDetails.username} shared a folder with you.`,
+      message: `${this.loggedInUserDetails.fullname} shared a folder with you.`,
       isRead: false,
       createdOn: new Date(),
       redirectTo: `/folder?folderId=${this.selectedFolder?.id}&name=${this.selectedFolder?.folderName}&isSharedFolder=true`,

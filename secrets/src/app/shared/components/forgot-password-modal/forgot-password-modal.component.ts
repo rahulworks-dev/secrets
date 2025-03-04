@@ -1,4 +1,12 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import { take } from 'rxjs';
 import { collection } from 'src/app/constants/secret.constant';
 import { IntermediateService } from 'src/app/services/intermediate.service';
@@ -11,9 +19,22 @@ import { ToastService } from 'src/app/services/toast.service';
   standalone: false,
 })
 export class ForgotPasswordModalComponent implements OnInit {
+  @ViewChild('forgotPasswordContainer', { static: false })
+  forgotPasswordContainer!: ElementRef;
   username: any;
+  originalCurrentFullName: any;
+  _currentFullName: any;
+  _loggedInUserId: any;
   @Input() isModalOpen = false;
-  @Input() isChangePassword = false;
+  @Input() firstScreenHeader: any;
+  @Input() secondScreenHeader: any;
+  @Input() set loggedInUserDetails(value: any) {
+    if (value) {
+      this.originalCurrentFullName = value?.fullname;
+      this._currentFullName = value?.fullname;
+      this._loggedInUserId = value?.id;
+    }
+  }
   @Output() setModalOpenToFalse = new EventEmitter<any>();
   secureId: any;
   isSuccessfullVerification = false;
@@ -23,6 +44,7 @@ export class ForgotPasswordModalComponent implements OnInit {
 
   currentPassword: any;
   isUserAvailableForChangePassword: any;
+
   constructor(
     private intermediateService: IntermediateService,
     private toast: ToastService
@@ -30,9 +52,7 @@ export class ForgotPasswordModalComponent implements OnInit {
 
   ngOnInit() {}
 
-  ngOnChanges() {
-    this.resetForm();
-  }
+  ngAfterViewInit() {}
 
   resetForm() {
     this.password = '';
@@ -62,6 +82,7 @@ export class ForgotPasswordModalComponent implements OnInit {
               if (this.isUserAvailable) {
                 this.toast.showSuccessToast('Successfull Verification');
                 this.isSuccessfullVerification = true;
+                this.setDynamicHeight();
               } else {
                 this.toast.showErrorToast(
                   'Either Username or Security ID is incorrect'
@@ -76,7 +97,7 @@ export class ForgotPasswordModalComponent implements OnInit {
           },
         });
     } else {
-      this.toast.showErrorToast('Please Enter Username & Security Id.')
+      this.toast.showErrorToast('Please Enter Username & Security Id.');
     }
   }
 
@@ -138,11 +159,12 @@ export class ForgotPasswordModalComponent implements OnInit {
       .subscribe({
         next: (resp) => {
           this.resetForm();
-          const successMsg = this.isChangePassword
-            ? 'Successfully Changed Your Password'
-            : 'Successfully Updated Your Password, Please Login with the Updated Password now';
+          const successMsg =
+            this.firstScreenHeader === 'Change Password'
+              ? 'Successfully Changed Your Password'
+              : 'Successfully Updated Your Password, Please Login with the Updated Password now';
           this.toast.showSuccessToast(successMsg);
-          this.setModalOpenToFalse.next(true);
+          this.setModalOpenToFalse.next({ updateLoggedInUser: true });
         },
         error: (e) => {
           console.error(e);
@@ -153,8 +175,46 @@ export class ForgotPasswordModalComponent implements OnInit {
       });
   }
 
+  changeFullName() {
+    if (this._currentFullName == this.originalCurrentFullName) {
+      this.toast.showErrorToast(
+        "Oops! Looks like you haven't updated your Full Name"
+      );
+    } else {
+      const payload = {
+        fullname: this._currentFullName,
+        avatar: this._currentFullName
+          ?.split(' ')
+          .map((item: any) => item?.charAt(0).toUpperCase())
+          .join(''),
+      };
+      this.intermediateService
+        .update(this._loggedInUserId, payload, collection.USERS)
+        .subscribe({
+          next: () => {
+            this.toast.showSuccessToast('Successfully Updated your Full Name');
+            this.setModalOpenToFalse.next({ updateLoggedInUser: true });
+          },
+          error: () => {
+            this.toast.showErrorToast(
+              'We Could not update your full name due to technical issue'
+            );
+            this.setModalOpenToFalse.next({ updateLoggedInUser: false });
+          },
+        });
+    }
+  }
+
   close() {
     this.resetForm();
-    this.setModalOpenToFalse.next(true);
+    this.setModalOpenToFalse.next({ updateLoggedInUser: false });
+  }
+
+  setDynamicHeight() {
+    this.forgotPasswordContainer.nativeElement.style.height = `${
+      this.forgotPasswordContainer.nativeElement.querySelector(
+        '.second-secreen'
+      ).scrollHeight + 30
+    }px`;
   }
 }

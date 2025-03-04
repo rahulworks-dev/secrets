@@ -18,6 +18,10 @@ export class ShowUserIdComponent implements OnInit {
     this.iconName = 'copy-outline';
   }
 
+  ngOnChanges() {
+    console.log('SHOW');
+  }
+
   onCopy() {
     if (this.userId) {
       navigator.clipboard
@@ -33,6 +37,13 @@ export class ShowUserIdComponent implements OnInit {
   }
 
   login() {
-    this.continueToLogin.next(true);
+    if (this.iconName === 'copy-outline') {
+      this.toast.showErrorToast(
+        'Please copy the Security Id. & Store it securely'
+      );
+      return;
+    }
+    this.iconName = 'copy';
+    this.continueToLogin.emit(true);
   }
 }

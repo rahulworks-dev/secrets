@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
+import { collection, storage } from 'src/app/constants/secret.constant';
 import { profileExtrasOne, profileExtrasTwo } from 'src/app/data/static-data';
 import { HelperService } from 'src/app/services/helper.service';
+import { IntermediateService } from 'src/app/services/intermediate.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { ToastService } from 'src/app/services/toast.service';
 
@@ -17,12 +19,15 @@ export class ProfilePage {
   profileExtrasTwo = profileExtrasTwo;
   isModalOpen = false;
   loggedInUserDetails: any;
+  firstScreenHeader: any;
+  secondScreenHeader: any;
   constructor(
     private alertCtrl: AlertController,
     private storageService: StorageService,
     private router: Router,
     private toast: ToastService,
-    private helperService: HelperService
+    private helperService: HelperService,
+    private intermediateService: IntermediateService
   ) {}
 
   ionViewDidEnter() {
@@ -32,15 +37,30 @@ export class ProfilePage {
   async getLoggedInUserDetails() {
     this.loggedInUserDetails =
       await this.helperService.getLoggedInUserDetails();
-    this.loggedInUserDetails = {
-      ...this.loggedInUserDetails,
-      avatar:
-        this.loggedInUserDetails?.username?.charAt(0)?.toUpperCase() ?? 'U',
-      maskedPassword: this.loggedInUserDetails?.password?.replace(/./g, '*'),
-    };
+    this.intermediateService
+      .readById(this.loggedInUserDetails?.id, collection.USERS)
+      .subscribe({
+        next: (resp) => {
+          this.storageService.set(storage.IS_LOGGED_IN, JSON.stringify(resp));
+          this.loggedInUserDetails = resp;
+          this.loggedInUserDetails = {
+            ...this.loggedInUserDetails,
+            maskedPassword: this.loggedInUserDetails?.password?.replace(
+              /./g,
+              '*'
+            ),
+          };
+        },
+      });
   }
 
   changePassword() {
+    this.firstScreenHeader = 'Change Password';
+    this.isModalOpen = true;
+  }
+
+  changeName() {
+    this.firstScreenHeader = 'Change Full Name';
     this.isModalOpen = true;
   }
 
@@ -81,5 +101,9 @@ export class ProfilePage {
     });
 
     await alert.present();
+  }
+
+  setModalOpenToFalse(eve: any) {
+    this.isModalOpen = false;
   }
 }

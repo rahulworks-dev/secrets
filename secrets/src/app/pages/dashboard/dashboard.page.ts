@@ -54,7 +54,7 @@ export class DashboardPage {
         if (hasSecrets) {
           this.secrets = resp.filter((item: any) => !item?.isArchived);
           if (this.secrets?.length > 0) {
-            this.secrets = this.helperService.sortByTime(this.secrets);
+            // this.secrets = this.helperService.sortByTime(this.secrets);
           } else {
             this.noSecretText = messages.NO_SECRETS;
           }
@@ -82,7 +82,8 @@ export class DashboardPage {
         this.hasNoFolders = !hasFolders;
         this.isAPIError = false;
         this.noFolderText = hasFolders ? '' : messages.NO_FOLDERS;
-        this.folders = hasFolders ? this.helperService.sortByTime(resp) : [];
+        this.folders = resp || [];
+        // this.folders = hasFolders ? this.helperService.sortByTime(resp) : [];
       },
       error: (e) => {
         // this.loaderService.hide();

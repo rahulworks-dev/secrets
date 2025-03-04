@@ -24,6 +24,12 @@ export class IntermediateService {
         secret: this.cryptoService.encrypt(data?.secret),
       };
     }
+    if (data.hasOwnProperty('password')) {
+      data = {
+        ...data,
+        password: this.cryptoService.encrypt(data?.password),
+      };
+    }
     return from(this.firebaseHandlerService.create(data, collectionName));
   }
 
@@ -32,6 +38,12 @@ export class IntermediateService {
       data = {
         ...data,
         secret: this.cryptoService.encrypt(data?.secret),
+      };
+    }
+    if (data.hasOwnProperty('password')) {
+      data = {
+        ...data,
+        password: this.cryptoService.encrypt(data?.password),
       };
     }
     return from(
@@ -54,32 +66,38 @@ export class IntermediateService {
           );
         }
 
-        return filteredResp.map((item) => {
+        filteredResp.map((item) => {
           if (item.createdOn instanceof Timestamp) {
             item['createdOnWithoutFormat'] = item.createdOn.toDate();
             item.createdOn = this.helperService.formatDate(
               item.createdOn,
               collectionName === 'notifications' ? '' : 'Created'
             );
-            //   item.createdOn = this.helperService.formatDate(
-            //     Timestamp.fromDate(new Date(2025, 1, 23, 0, 0)),
-            //     'Created'
-            //   );
           }
           if (item.lastUpdatedOn instanceof Timestamp) {
             item['lastUpdatedOnWithoutFormat'] = item.lastUpdatedOn.toDate();
             item.lastUpdatedOn = this.helperService.formatDate(
               item.lastUpdatedOn,
-              'Last Updated'
+              'Modified'
             );
           }
 
           // Decrypt secret if it exists
-          if (item.secret) {
+          if (item?.secret) {
             item.secret = this.cryptoService.decrypt(item.secret);
+          }
+          if (item?.password) {
+            item.password = this.cryptoService.decrypt(item.password);
           }
 
           return item;
+        });
+
+        return this.helperService.sortBy(filteredResp, {
+          sortingPreferenceType:
+            this.loggedInUserDetails?.sortingPreferenceType || 1,
+          sortingPreferenceOrder:
+            this.loggedInUserDetails?.sortingPreferenceOrder || -1,
         });
       })
     );
@@ -101,12 +119,15 @@ export class IntermediateService {
           item['lastUpdatedOnWithoutFormat'] = item.lastUpdatedOn.toDate();
           item.lastUpdatedOn = this.helperService.formatDate(
             item.lastUpdatedOn,
-            'Last Updated'
+            'Modified'
           );
         }
 
         if (item.secret) {
           item.secret = this.cryptoService.decrypt(item.secret);
+        }
+        if (item?.password) {
+          item.password = this.cryptoService.decrypt(item.password);
         }
 
         return item;

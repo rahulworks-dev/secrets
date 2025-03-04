@@ -14,6 +14,7 @@ import { ToastService } from 'src/app/services/toast.service';
 export class BottomTabComponent implements OnInit {
   bottomsTabs = bottomTabs;
   activeIndex = 0;
+  hideBottomTab = false;
   constructor(
     private router: Router,
     private toast: ToastService,
@@ -28,6 +29,9 @@ export class BottomTabComponent implements OnInit {
         this.updateActiveIndex();
       });
     this.updateActiveIndex();
+    this.helperService.hideBottomTab$.subscribe(
+      (resp) => (this.hideBottomTab = resp)
+    );
   }
 
   updateActiveIndex() {

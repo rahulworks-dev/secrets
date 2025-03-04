@@ -1,6 +1,17 @@
 import { trigger, transition, style, animate } from '@angular/animations';
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
+import {
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
 import { Router } from '@angular/router';
 import {
   collection,
@@ -18,28 +29,13 @@ import { ToastService } from 'src/app/services/toast.service';
   selector: 'app-login',
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
-  animations: [
-    trigger('slideAnimation', [
-      transition(':enter', [
-        style({ transform: 'translateX(100%)', opacity: 0 }),
-        animate(
-          '500ms ease-in-out',
-          style({ transform: 'translateX(0%)', opacity: 1 })
-        ),
-      ]),
-      transition(':leave', [
-        animate(
-          '500ms ease-in-out',
-          style({ transform: 'translateX(-100%)', opacity: 0 })
-        ),
-      ]),
-    ]),
-  ],
   standalone: false,
 })
 export class LoginPage implements OnInit {
+  @ViewChild('loginContainer', { static: false }) loginContainer!: ElementRef;
   username: any;
   password: any;
+  fullname: any;
   confirmPassword: any;
   isSliding = false;
   isUserNameValid: any;
@@ -48,13 +44,18 @@ export class LoginPage implements OnInit {
   isUserIdModalOpen = false;
   isForgotPasswordModalOpen = false;
   signUpUserId: any;
+  loginAndSignupForm!: FormGroup;
   constructor(
     private router: Router,
     private intermediateService: IntermediateService,
     private toast: ToastService,
     private loaderService: LoaderService,
-    private storageService: StorageService
-  ) {}
+    private storageService: StorageService,
+    private fb: FormBuilder,
+    private cdr: ChangeDetectorRef
+  ) {
+    // this.initializeForm();
+  }
 
   ngOnInit() {}
 
@@ -64,6 +65,23 @@ export class LoginPage implements OnInit {
     this.username = '';
     this.password = '';
     this.confirmPassword = '';
+    this.setDynamicHeight();
+  }
+
+  setDynamicHeight() {
+    setTimeout(() => {
+      if (this.loginContainer) {
+        this.loginContainer.nativeElement.style.height = this.isSliding
+          ? `${
+              this.loginContainer.nativeElement.querySelector('.signup-animate')
+                .scrollHeight
+            }px`
+          : `${
+              this.loginContainer.nativeElement.querySelector('.login-animate')
+                .scrollHeight
+            }px`;
+      }
+    }, 50);
   }
 
   async login() {
@@ -84,7 +102,7 @@ export class LoginPage implements OnInit {
             this.router.navigateByUrl('/dashboard');
           } else {
             this.toast.showErrorToast(
-              'Either Username or Password is incorrect'
+              "Either Username or Password is incorrect, Please Sign up if you're new to SECRETS"
             );
           }
         } else {
@@ -101,11 +119,15 @@ export class LoginPage implements OnInit {
   }
 
   toggle() {
+    this.isUserIdModalOpen = false;
     this.username = '';
     this.password = '';
     this.confirmPassword = '';
+    this.showSucessIcon = false;
+    this.showSpinner = false;
+    this.fullname = '';
     this.isSliding = !this.isSliding;
-    this.isUserIdModalOpen = false;
+    this.setDynamicHeight();
   }
 
   onTypingUsername(eve: any) {
@@ -165,7 +187,12 @@ export class LoginPage implements OnInit {
       const data: signup = {
         username: this.username,
         password: this.password,
+        fullname: this.fullname,
         createdOn: new Date(),
+        avatar: this.fullname
+          ?.split(' ')
+          .map((item: any) => item?.charAt(0).toUpperCase())
+          .join(''),
       };
       this.loaderService.show();
       this.intermediateService.create(data, collection.USERS).subscribe({
@@ -188,13 +215,26 @@ export class LoginPage implements OnInit {
   }
 
   isSignUpValid() {
-    if (this.username && this.password && this.confirmPassword) {
-      if (this.username.length < 4) {
+    if (
+      this.username &&
+      this.password &&
+      this.confirmPassword &&
+      this.fullname
+    ) {
+      if (this.fullname.length < 4) {
+        this.toast.showErrorToast('Full Name cannot be less than 4 Characters');
+      } else if (!/^[A-Za-z ]+$/.test(this.fullname)) {
+        this.toast.showErrorToast(
+          'Full Name can only contain Alphabetical Characters'
+        );
+      } else if (this.username.length < 4) {
         this.toast.showErrorToast('Username cannot be less than 4 Characters');
       } else if (!/^[A-Za-z0-9]+$/.test(this.username)) {
         this.toast.showErrorToast('Username cannot contain special characters');
       } else if (!this.isUserNameValid) {
-        this.toast.showErrorToast('Username already taken');
+        this.toast.showErrorToast(
+          'Username already taken, Please use different username'
+        );
       } else if (this.password.length < 5) {
         this.toast.showErrorToast('Password cannot be less than 5 characters');
       } else if (this.password !== this.confirmPassword) {
@@ -205,7 +245,7 @@ export class LoginPage implements OnInit {
         return true;
       }
     } else {
-      this.toast.showErrorToast('Please fill the form');
+      this.toast.showErrorToast('Please fill all required fields');
       return false;
     }
     return false;

@@ -70,10 +70,42 @@ export const profileExtrasTwo = [
   {
     name: 'Feedback',
     icon: 'mail',
-    route : 'feedback'
+    route: 'feedback',
   },
   {
     name: 'Sign out',
     icon: 'log-out',
+  },
+];
+
+export const sortingList = [
+  {
+    icon: 'settings-outline',
+    icon_active: 'settings',
+    name: 'Default',
+  },
+  {
+    icon: 'calendar-outline',
+    icon_active: 'calendar',
+    name: 'Created Date',
+    sort_criteria: 'descending',
+    ascending_text: 'Oldest First',
+    descending_text: 'Newest First',
+  },
+  {
+    icon: 'calendar-outline',
+    icon_active: 'calendar',
+    name: 'Modified Date',
+    sort_criteria: 'descending',
+    ascending_text: 'Oldest First',
+    descending_text: 'Newest First',
+  },
+  {
+    icon: 'text-outline',
+    icon_active: 'text',
+    name: 'Title',
+    sort_criteria: 'ascending',
+    ascending_text: 'A-Z',
+    descending_text: 'Z-A',
   },
 ];

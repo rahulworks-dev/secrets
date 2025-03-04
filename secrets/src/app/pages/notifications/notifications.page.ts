@@ -3,6 +3,7 @@ import { arrayRemove } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { GestureController } from '@ionic/angular';
 import { collection, messages } from 'src/app/constants/secret.constant';
+import { AdvancedFirebaseHandlerService } from 'src/app/services/advanced-firebase-handler.service';
 import { FirebaseHandlerService } from 'src/app/services/firebase-handler.service';
 import { HelperService } from 'src/app/services/helper.service';
 import { IntermediateService } from 'src/app/services/intermediate.service';
@@ -24,6 +25,7 @@ export class NotificationsPage implements OnInit {
     private helperService: HelperService,
     private toast: ToastService,
     private firebaseHandlerService: FirebaseHandlerService,
+    private advancedFirebaseHandlerService: AdvancedFirebaseHandlerService,
     private router: Router,
     private gestureCtrl: GestureController
   ) {}
@@ -36,32 +38,34 @@ export class NotificationsPage implements OnInit {
     this.fetchNotifications();
   }
   async fetchNotifications() {
-    const subscription = this.intermediateService.readAll(collection.NOTIFICATIONS, '').subscribe({
-      next: (resp) => {
-        this.noNotificationText = '';
-        this.isAPIError = false;
-        console.log(resp);
-        this.notifications =
-          resp?.filter(
-            (item: any) => item?.recipientId == this.loggedInUserDetails?.id
-          ) || [];
-        if (this.notifications?.length < 1) {
-          this.noNotificationText = messages.NO_NOTIFICATION_TEXT;
-        } else {
-          this.updateToRead();
-          subscription.unsubscribe();
-        }
-      },
-      error: (e) => {
-        this.isAPIError = true;
-        console.error(e);
-      },
-    });
+    const subscription = this.intermediateService
+      .readAll(collection.NOTIFICATIONS, '')
+      .subscribe({
+        next: (resp) => {
+          this.noNotificationText = '';
+          this.isAPIError = false;
+          console.log(resp);
+          this.notifications =
+            resp?.filter(
+              (item: any) => item?.recipientId == this.loggedInUserDetails?.id
+            ) || [];
+          if (this.notifications?.length < 1) {
+            this.noNotificationText = messages.NO_NOTIFICATION_TEXT;
+          } else {
+            this.updateToRead();
+            subscription.unsubscribe();
+          }
+        },
+        error: (e) => {
+          this.isAPIError = true;
+          console.error(e);
+        },
+      });
   }
 
   updateToRead() {
-    this.firebaseHandlerService.updateInBulk(
-      this.notifications,
+    this.advancedFirebaseHandlerService.updateInBulk(
+      this.notifications.map((item: any) => item?.id),
       collection.NOTIFICATIONS
     );
   }
@@ -116,7 +120,7 @@ export class NotificationsPage implements OnInit {
 
   clearAll() {
     const notificationIds = this.notifications.map((item: any) => item?.id);
-    this.firebaseHandlerService
+    this.advancedFirebaseHandlerService
       .deleteInBulk(notificationIds, collection.NOTIFICATIONS)
       .then(() =>
         this.toast.showSuccessToast('Deleted All Notifications Successfully')

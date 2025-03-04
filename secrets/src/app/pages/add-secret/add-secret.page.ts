@@ -32,7 +32,7 @@ export class AddSecretPage {
   loggedInUserDetails: any;
   folderId: any;
   isSaveButtonDisabled = false;
-  isViewSecret = false;
+  isViewSecret = true;
   constructor(
     private router: Router,
     private intermediateService: IntermediateService,

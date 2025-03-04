@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { ActionSheetController, AlertController } from '@ionic/angular';
 import { collection } from 'src/app/constants/secret.constant';
+import { AdvancedFirebaseHandlerService } from 'src/app/services/advanced-firebase-handler.service';
 import { FirebaseHandlerService } from 'src/app/services/firebase-handler.service';
 import { LoaderService } from 'src/app/services/loader.service';
 import { ToastService } from 'src/app/services/toast.service';
@@ -32,6 +33,7 @@ export class FoldersComponent implements OnInit {
     private toast: ToastService,
     public loaderService: LoaderService,
     private firebaseService: FirebaseHandlerService,
+    private advancedFirebaseHandlerService: AdvancedFirebaseHandlerService,
     private alertCtrl: AlertController,
     private router: Router
   ) {}
@@ -98,7 +100,7 @@ export class FoldersComponent implements OnInit {
           text: 'Delete',
           cssClass: 'icon',
           handler: () => {
-            this.showDeleteAlert(folder?.id);
+            this.showDeleteAlert(folder);
           },
         },
         {
@@ -115,7 +117,7 @@ export class FoldersComponent implements OnInit {
     await actionSheet.present();
   }
 
-  async showDeleteAlert(folderId: any) {
+  async showDeleteAlert(folder: any) {
     const alert = await this.alertCtrl.create({
       header: 'Delete Folder',
       message:
@@ -133,7 +135,7 @@ export class FoldersComponent implements OnInit {
           role: 'confirm',
           cssClass: 'alert-button-confirm',
           handler: () => {
-            this.deleteFolder(folderId);
+            this.deleteFolder(folder);
           },
         },
       ],
@@ -142,15 +144,16 @@ export class FoldersComponent implements OnInit {
     await alert.present();
   }
 
-  deleteFolder(folderId: any) {
-    if (!folderId) {
+  deleteFolder(folder: any) {
+    if (!folder?.id) {
       this.toast.showErrorToast(
         'Something Went Wrong, We Could not delete the selected folder'
       );
       return;
     }
-    this.firebaseService
-      .deleteItem(folderId, collection.FOLDERS)
+
+    this.advancedFirebaseHandlerService
+      .deleteFolder(folder?.id, folder?.secrets)
       .then((item: any) => {
         this.toast.showSuccessToast('Successfully Deleted Folder');
         this._fetchFolders.next(true);
