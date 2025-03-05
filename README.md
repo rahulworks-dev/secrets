@@ -24,7 +24,7 @@ Check out the live version here: [secretz.netlify.app](https://secretz.netlify.a
 
 1. Clone the repository:  
    ```sh
-   git clone https://github.com/yourusername/secrets.git
+   git clone https://github.com/rahulworks-dev/secrets.git
    cd secrets
 2. Install Dependencies:
    ```sh
