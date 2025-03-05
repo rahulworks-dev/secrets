@@ -27,8 +27,10 @@ Check out the live version here: [secretz.netlify.app](https://secretz.netlify.a
    git clone https://github.com/yourusername/secrets.git
    cd secrets
 2. Install Dependencies:
+   ```sh
    npm install
-3. Run the development Server:
+4. Run the development Server:
+   ```sh
    ionic serve
 
 ## 📢 Contributing
