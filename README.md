@@ -32,8 +32,8 @@ Check out the live version here: [secretz.netlify.app](https://secretz.netlify.a
 3. Configure Firebase
    Create a new Firebase project in Firebase Console.
 4. Create Environment Files (src/environments/environment.ts & src/environments/environment.prod.ts)
-   Copy the following to your src/environments/environment.ts
-   Replace it with your Firebase Credentials
+   - Copy the following to your src/environments/environment.ts
+   - Replace it with your Firebase Credentials
    ```sh
    export const environment = {
      production: false,
