@@ -17,7 +17,7 @@ Check out the live version here: [secretz.netlify.app](https://secretz.netlify.a
 
 ## 🛠 Technologies Used  
 - **Frontend:** Ionic + Angular  
-- **Database:** Firestore (with encryption)  
+- **Database:** Firestore Database (with encryption)  
 - **Hosting:** Netlify  
 
 ## 📌 Installation  
