@@ -9,7 +9,7 @@ Check out the live version here: [secretz.netlify.app](https://secretz.netlify.a
 - 🔒 **End-to-End Encryption** – Secrets are securely stored in Firestore.  
 - 🕵️‍♂️ **Hidden by Default** – Secrets remain encrypted until the user clicks "Reveal."  
 - 📂 **Organized Storage** – Secrets are managed efficiently within the app.  
-- 🔔 **Notifications** – Users get notified when a folder is shared with them.  
+- 🔔 **Shared Secrets** – Secrets can be shared with other secret member.
 
 ## 🔜 Upcoming Features  
 - 🛑 **Decoy Vault** – A secondary vault to mislead unauthorized access attempts.  
