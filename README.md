@@ -29,7 +29,24 @@ Check out the live version here: [secretz.netlify.app](https://secretz.netlify.a
 2. Install Dependencies:
    ```sh
    npm install
-4. Run the development Server:
+3. Configure Firebase
+   Create a new Firebase project in Firebase Console.
+4. Create Environment Files (src/environments/environment.ts & src/environments/environment.prod.ts)
+   Copy the following to your src/environments/environment.ts
+   Replace it with your Firebase Credentials
+   ```sh
+   export const environment = {
+     production: false,
+     firebaseConfig: {
+       apiKey: "YOUR_API_KEY_HERE",
+       authDomain: "YOUR_AUTH_DOMAIN",
+       projectId: "YOUR_PROJECT_ID",
+       storageBucket: "YOUR_STORAGE_BUCKET",
+       messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+       appId: "YOUR_APP_ID",
+      }
+    };
+3. Run the development Server:
    ```sh
    ionic serve
 
