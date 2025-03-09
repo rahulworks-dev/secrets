@@ -22,6 +22,7 @@ import { signup } from 'src/app/models/secret.interface';
 import { FirebaseHandlerService } from 'src/app/services/firebase-handler.service';
 import { IntermediateService } from 'src/app/services/intermediate.service';
 import { LoaderService } from 'src/app/services/loader.service';
+import { MakePageNonInteractiveService } from 'src/app/services/make-page-non-interactive.service';
 import { StorageService } from 'src/app/services/storage.service';
 import { ToastService } from 'src/app/services/toast.service';
 
@@ -46,13 +47,13 @@ export class LoginPage implements OnInit {
   signUpUserId: any;
   loginAndSignupForm!: FormGroup;
   constructor(
+    public loaderService: LoaderService,
+
     private router: Router,
-    private intermediateService: IntermediateService,
     private toast: ToastService,
-    private loaderService: LoaderService,
     private storageService: StorageService,
-    private fb: FormBuilder,
-    private cdr: ChangeDetectorRef
+    private intermediateService: IntermediateService,
+    private makePageNonInteractive: MakePageNonInteractiveService
   ) {
     // this.initializeForm();
   }
@@ -168,14 +169,17 @@ export class LoginPage implements OnInit {
 
   readAllUsers(): Promise<any> {
     this.loaderService.show();
+    this.makePageNonInteractive.activate();
     return new Promise((resolve, reject) => {
       this.intermediateService.readAll(collection.USERS).subscribe({
         next: (resp) => {
           this.loaderService.hide();
+          this.makePageNonInteractive.deactivate();
           resolve(resp);
         },
         error: (err) => {
           this.loaderService.hide();
+          this.makePageNonInteractive.deactivate();
           reject(err);
         },
       });
@@ -195,16 +199,18 @@ export class LoginPage implements OnInit {
           .join(''),
       };
       this.loaderService.show();
+      this.makePageNonInteractive.activate();
       this.intermediateService.create(data, collection.USERS).subscribe({
         next: (resp) => {
           this.signUpUserId = resp;
-          console.log('resp: ', resp);
+          this.makePageNonInteractive.deactivate();
           this.toast.showSuccessToast('Successful Registeration');
           this.loaderService.hide();
           this.isUserIdModalOpen = true;
         },
         error: (err) => {
           console.error(err);
+          this.makePageNonInteractive.deactivate();
           this.toast.showSuccessToast(
             'UnSuccessful Registeration, Please try again'
           );

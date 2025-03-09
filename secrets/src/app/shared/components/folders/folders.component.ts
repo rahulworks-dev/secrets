@@ -163,4 +163,8 @@ export class FoldersComponent implements OnInit {
   trackById(index: number, item: any) {
     return item.id;
   }
+
+  navigate(){
+    this.router.navigateByUrl('/folders?tab=myFolders');
+  }
 }

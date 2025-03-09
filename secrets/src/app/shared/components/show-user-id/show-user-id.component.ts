@@ -19,7 +19,7 @@ export class ShowUserIdComponent implements OnInit {
   }
 
   ngOnChanges() {
-    console.log('SHOW');
+    this.iconName = 'copy-outline';
   }
 
   onCopy() {

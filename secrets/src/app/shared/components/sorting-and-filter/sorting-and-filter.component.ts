@@ -33,7 +33,7 @@ export class SortingAndFilterComponent implements OnInit {
   async setActiveSortIfPresent() {
     const loggedInUserDetails =
       await this.helperService.getLoggedInUserDetails();
-    this.activeSortingIndex = loggedInUserDetails?.sortingPreferenceType;
+    this.activeSortingIndex = loggedInUserDetails?.sortingPreferenceType || 0;
     if (this.activeSortingIndex !== 0) {
       this.sortingList[this.activeSortingIndex].sort_criteria =
         loggedInUserDetails?.sortingPreferenceOrder == 1

@@ -10,6 +10,7 @@ import {
 import { take } from 'rxjs';
 import { collection } from 'src/app/constants/secret.constant';
 import { IntermediateService } from 'src/app/services/intermediate.service';
+import { MakePageNonInteractiveService } from 'src/app/services/make-page-non-interactive.service';
 import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
@@ -46,8 +47,9 @@ export class ForgotPasswordModalComponent implements OnInit {
   isUserAvailableForChangePassword: any;
 
   constructor(
+    private toast: ToastService,
     private intermediateService: IntermediateService,
-    private toast: ToastService
+    private makePageNonInteractive: MakePageNonInteractiveService
   ) {}
 
   ngOnInit() {}
@@ -176,11 +178,13 @@ export class ForgotPasswordModalComponent implements OnInit {
   }
 
   changeFullName() {
-    if (this._currentFullName == this.originalCurrentFullName) {
+    if (this._currentFullName.trim() == this.originalCurrentFullName) {
       this.toast.showErrorToast(
         "Oops! Looks like you haven't updated your Full Name"
       );
     } else {
+      this._currentFullName = this._currentFullName.trim();
+      this.makePageNonInteractive.activate();
       const payload = {
         fullname: this._currentFullName,
         avatar: this._currentFullName
@@ -192,10 +196,12 @@ export class ForgotPasswordModalComponent implements OnInit {
         .update(this._loggedInUserId, payload, collection.USERS)
         .subscribe({
           next: () => {
+            this.makePageNonInteractive.deactivate();
             this.toast.showSuccessToast('Successfully Updated your Full Name');
             this.setModalOpenToFalse.next({ updateLoggedInUser: true });
           },
           error: () => {
+            this.makePageNonInteractive.deactivate();
             this.toast.showErrorToast(
               'We Could not update your full name due to technical issue'
             );

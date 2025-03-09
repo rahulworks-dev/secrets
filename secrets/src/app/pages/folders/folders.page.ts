@@ -42,7 +42,7 @@ export class FoldersPage {
     public loaderService: LoaderService,
     private intermediateService: IntermediateService,
     private firebaseHandlerService: FirebaseHandlerService,
-    private advancedFirebaseHandlerService : AdvancedFirebaseHandlerService,
+    private advancedFirebaseHandlerService: AdvancedFirebaseHandlerService,
     private route: ActivatedRoute,
     private toast: ToastService
   ) {}
@@ -50,9 +50,8 @@ export class FoldersPage {
   ngOnInit() {}
 
   async ionViewDidEnter() {
-    // this.activeFolderType = 'myFolders';
-    this.getLoggedInUserDetails();
     this.isShared = false;
+    this.getLoggedInUserDetails();
     this.readActionFromURL();
     this.fetchFolders();
   }
@@ -87,14 +86,13 @@ export class FoldersPage {
             ) || [];
           this.duplicateFolders = this.folders;
 
-          if (this.activeTabFromURL === 'myFolders') {
-            if (this.folders?.length > 0) {
-            } else {
-              this.noFolderText = messages.NO_FOLDERS;
-            }
-          } else {
-            this.onFolderType(this.activeTabFromURL);
-          }
+          // if (this.activeTabFromURL === 'myFolders') {
+          //   if (this.folders?.length == 0) {
+          //     this.noFolderText = messages.NO_FOLDERS;
+          //   }
+          // } else {
+          // }
+          this.onFolderType(this.activeTabFromURL);
         } else {
           this.noFolderText = messages.NO_FOLDERS;
         }
