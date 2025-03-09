@@ -106,13 +106,15 @@ export class FoldersPage {
   }
 
   onFolderType(folderType: any) {
-    if (this.action) {
+    if (this.action && folderType === 'shared') {
       this.toast.showErrorToast('You cannot move to the shared folder!');
       return;
     }
     this.activeFolderType = folderType;
     if (this.activeFolderType === 'myFolders') {
-      this.router.navigateByUrl('/folders?tab=myFolders', { replaceUrl: true });
+      if(!this.action){
+        this.router.navigateByUrl('/folders?tab=myFolders', { replaceUrl: true });
+      }
       this.folders = this.duplicateFolders;
       this.isShared = false;
       if (this.folders?.length < 1) {
