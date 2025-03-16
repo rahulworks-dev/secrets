@@ -4,9 +4,13 @@ import {
   arrayUnion,
   doc,
   Firestore,
+  getDoc,
   runTransaction,
+  setDoc,
+  updateDoc,
   writeBatch,
 } from '@angular/fire/firestore';
+import { collection, storage } from '../constants/secret.constant';
 
 @Injectable({
   providedIn: 'root',
@@ -146,5 +150,19 @@ export class AdvancedFirebaseHandlerService {
       batch.delete(notificationRef);
     });
     await batch.commit();
+  }
+
+  async createUser(user: any): Promise<void> {
+    const userRef = doc(this.firestore, collection.USERS, user.email);
+    const userDoc = await getDoc(userRef);
+
+    if (userDoc.exists()) {
+      await updateDoc(userRef, {
+        photoURL: user.photoURL,
+        fullname: user.fullname,
+      });
+    } else {
+      await setDoc(userRef, user);
+    }
   }
 }

@@ -290,9 +290,9 @@ export class SecretCardsComponent implements OnInit {
     return item.id;
   }
 
-  async handleSearchInput(eve: any) {
+   handleSearchInput(eve: any) {
     const loggedInUserDetails =
-      await this.helperService.getLoggedInUserDetails();
+       this.helperService.getLoggedInUserDetails();
     const searchInput = eve.target.value;
     this.filteredSecrets = this.originalSecrets.filter((item: any) =>
       item.title.toLowerCase().startsWith(searchInput.toLowerCase())

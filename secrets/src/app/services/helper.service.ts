@@ -20,8 +20,10 @@ export class HelperService {
     private toast: ToastService
   ) {}
 
-  async getLoggedInUserDetails() {
-    const userDetails = await this.storageService.get(storage.IS_LOGGED_IN);
+  getLoggedInUserDetails() {
+    const userDetails = JSON.parse(
+      sessionStorage.getItem(storage.IS_LOGGED_IN)!
+    );
     this.isLoggedInSubject.next(!!userDetails);
     return userDetails;
   }

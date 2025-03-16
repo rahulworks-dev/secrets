@@ -97,10 +97,10 @@ export class CreateFolderModalComponent implements OnInit {
     return false;
   }
 
-  async createFolder() {
+   createFolder() {
     this.disableSubmitBtn = true;
     const loggedInUserDetails =
-      await this.helperService.getLoggedInUserDetails();
+       this.helperService.getLoggedInUserDetails();
     const payload: Folder = {
       userId: loggedInUserDetails?.id,
       folderName: this.folderName,

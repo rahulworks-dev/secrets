@@ -32,9 +32,8 @@ export class NotificationsPage implements OnInit {
 
   ngOnInit() {}
 
-  async ionViewDidEnter() {
-    this.loggedInUserDetails =
-      await this.helperService.getLoggedInUserDetails();
+  ionViewDidEnter() {
+    this.loggedInUserDetails = this.helperService.getLoggedInUserDetails();
     this.fetchNotifications();
   }
   async fetchNotifications() {
@@ -74,7 +73,10 @@ export class NotificationsPage implements OnInit {
     eve.stopPropagation();
     this.firebaseHandlerService
       .deleteItem(notification?.id, collection.NOTIFICATIONS)
-      .then(() => this.toast.showSuccessToast('Deleted Successfully'))
+      .then(() => {
+        this.toast.showSuccessToast('Deleted Successfully');
+        this.fetchNotifications();
+      })
       .catch((e) =>
         this.toast.showErrorToast(
           "We couldn't delete notification due to technical issue"

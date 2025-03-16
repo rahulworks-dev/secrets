@@ -15,7 +15,9 @@ export class IntermediateService {
     private firebaseHandlerService: FirebaseHandlerService,
     private cryptoService: CryptoService,
     private helperService: HelperService
-  ) {}
+  ) {
+    
+  }
 
   create(data: any, collectionName: string): Observable<any> {
     if (data.hasOwnProperty('secret')) {
@@ -52,21 +54,23 @@ export class IntermediateService {
   }
 
   readAll(collectionName: string, comparisonKey = 'userId'): Observable<any[]> {
-    return from(this.helperService.getLoggedInUserDetails()).pipe(
-      tap((userDetails) => {
-        this.loggedInUserDetails = userDetails;
-      }),
-      switchMap(() => this.firebaseHandlerService.readAll(collectionName)),
-      tap((item: any) => {}),
+    this.loggedInUserDetails = this.helperService.getLoggedInUserDetails();
+    // console.log('collectionName: ', collectionName, this.loggedInUserDetails);
+    // console.log(this.loggedInUserDetails);
+    return this.firebaseHandlerService.readAll(collectionName).pipe(
       map((resp: any[]) => {
+        // console.log('resp: ', resp);
         let filteredResp = resp;
+
+        // Filter items by userId if `comparisonKey` is provided
         if (comparisonKey) {
           filteredResp = resp.filter(
             (item) => item?.[comparisonKey] === this.loggedInUserDetails?.id
           );
         }
 
-        filteredResp.map((item) => {
+        // Map and process each item
+        filteredResp = filteredResp.map((item) => {
           if (item.createdOn instanceof Timestamp) {
             item['createdOnWithoutFormat'] = item.createdOn.toDate();
             item.createdOn = this.helperService.formatDate(
@@ -93,6 +97,7 @@ export class IntermediateService {
           return item;
         });
 
+        // Sort the items based on user preferences
         return this.helperService.sortBy(filteredResp, {
           sortingPreferenceType:
             this.loggedInUserDetails?.sortingPreferenceType || 1,

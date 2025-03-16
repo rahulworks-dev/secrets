@@ -2,7 +2,7 @@ import { Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { arrayRemove } from '@angular/fire/firestore';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ActionSheetController } from '@ionic/angular';
+import { ActionSheetController, AlertController } from '@ionic/angular';
 import { distinctUntilChanged } from 'rxjs';
 import { collection, messages } from 'src/app/constants/secret.constant';
 import { FirebaseHandlerService } from 'src/app/services/firebase-handler.service';
@@ -36,12 +36,12 @@ export class SecretsPage {
     private intermediateService: IntermediateService,
     private actionSheet: ActionSheetController,
     private router: Router,
-    private location: Location
+    private location: Location,
+    private alertCtrl: AlertController
   ) {}
 
-  async ionViewDidEnter() {
-    this.loggedInUserDetails =
-      await this.helperService.getLoggedInUserDetails();
+  ionViewDidEnter() {
+    this.loggedInUserDetails = this.helperService.getLoggedInUserDetails();
     this.readActionFromURL();
   }
 
@@ -156,8 +156,7 @@ export class SecretsPage {
     const payload = {
       sharedTo: arrayRemove({
         id: this.loggedInUserDetails?.id,
-        username: this.loggedInUserDetails?.username,
-        avatar: this.loggedInUserDetails?.avatar,
+        photoURL: this.loggedInUserDetails?.photoURL,
         fullname: this.loggedInUserDetails?.fullname,
       }),
     };
@@ -166,11 +165,37 @@ export class SecretsPage {
       .subscribe({
         next: () => {
           this.toast.showErrorToast(
-            `Successfully Left the folder ${this.folderDetails?.folderName} Shared by ${this.sharedBy?.username}`
+            `Successfully Left the folder ${this.folderDetails?.folderName} Shared by ${this.sharedBy?.fullname}`
           );
           this.location.back();
-          // this.router.navigateByUrl('/folders');
         },
       });
+  }
+
+  async showLeaveFolderAlert() {
+    const alert = await this.alertCtrl.create({
+      header: `Leave Folder`,
+      subHeader: 'This action cannot be undone!',
+      message: `Are you sure you want to leave this folder ?`,
+      cssClass: 'custom-alert',
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          cssClass: 'alert-button-cancel',
+          handler: () => {},
+        },
+        {
+          text: 'Yes',
+          role: 'confirm',
+          cssClass: 'alert-button-confirm',
+          handler: () => {
+            this.leaveFolder();
+          },
+        },
+      ],
+    });
+
+    await alert.present();
   }
 }

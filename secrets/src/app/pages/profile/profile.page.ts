@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Auth, signOut } from '@angular/fire/auth';
 import { Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
 import { collection, storage } from 'src/app/constants/secret.constant';
@@ -27,31 +28,25 @@ export class ProfilePage {
     private router: Router,
     private toast: ToastService,
     private helperService: HelperService,
-    private intermediateService: IntermediateService
+    private intermediateService: IntermediateService,
+    private auth: Auth
   ) {}
 
   ionViewDidEnter() {
     this.getLoggedInUserDetails();
   }
 
-  async getLoggedInUserDetails() {
-    this.loggedInUserDetails =
-      await this.helperService.getLoggedInUserDetails();
-    this.intermediateService
-      .readById(this.loggedInUserDetails?.id, collection.USERS)
-      .subscribe({
-        next: (resp) => {
-          this.storageService.set(storage.IS_LOGGED_IN, JSON.stringify(resp));
-          this.loggedInUserDetails = resp;
-          this.loggedInUserDetails = {
-            ...this.loggedInUserDetails,
-            maskedPassword: this.loggedInUserDetails?.password?.replace(
-              /./g,
-              '*'
-            ),
-          };
-        },
-      });
+  getLoggedInUserDetails() {
+    this.loggedInUserDetails = this.helperService.getLoggedInUserDetails();
+    // this.intermediateService
+    //   .readById(this.loggedInUserDetails?.email, collection.USERS)
+    //   .subscribe({
+    //     next: (resp) => {
+    //       console.log('resp: ', resp);
+    //       sessionStorage.setItem(storage.IS_LOGGED_IN, JSON.stringify(resp));
+    //       this.loggedInUserDetails = resp;
+    //     },
+    //   });
   }
 
   changePassword() {
@@ -92,9 +87,14 @@ export class ProfilePage {
           role: 'confirm',
           cssClass: 'alert-button-confirm',
           handler: () => {
-            this.storageService.clear();
-            this.helperService.getLoggedInUserDetails();
-            this.router.navigateByUrl('/login');
+            signOut(this.auth).then(() => {
+              sessionStorage.clear();
+              localStorage.clear();
+              this.helperService.getLoggedInUserDetails();
+              setTimeout(() => {
+                this.router.navigateByUrl('/login');
+              }, 500);
+            })
           },
         },
       ],

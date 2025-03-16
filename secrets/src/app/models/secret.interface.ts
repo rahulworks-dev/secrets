@@ -1,10 +1,11 @@
-export interface signup {
-  name?: string;
-  username: string;
-  password: string;
+export interface user {
+  email: string;
+  uid: string;
+  photoURL: string;
   fullname: string;
   createdOn: Date;
-  avatar: string;
+  sortingPreferenceType: number;
+  sortingPreferenceOrder: 1 | -1;
 }
 export interface Secret {
   title: string;

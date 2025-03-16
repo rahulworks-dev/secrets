@@ -30,9 +30,9 @@ export class SortingAndFilterComponent implements OnInit {
     this.setActiveSortIfPresent();
   }
 
-  async setActiveSortIfPresent() {
+   setActiveSortIfPresent() {
     const loggedInUserDetails =
-      await this.helperService.getLoggedInUserDetails();
+       this.helperService.getLoggedInUserDetails();
     this.activeSortingIndex = loggedInUserDetails?.sortingPreferenceType || 0;
     if (this.activeSortingIndex !== 0) {
       this.sortingList[this.activeSortingIndex].sort_criteria =
@@ -53,9 +53,9 @@ export class SortingAndFilterComponent implements OnInit {
         : 'ascending';
   }
 
-  async onSortSelection() {
+   onSortSelection() {
     const loggedInUserDetails =
-      await this.helperService.getLoggedInUserDetails();
+       this.helperService.getLoggedInUserDetails();
     const sortingPreferenceOrder =
       this.sortingList[this.activeSortingIndex].sort_criteria === 'ascending'
         ? 1
@@ -76,7 +76,7 @@ export class SortingAndFilterComponent implements OnInit {
       .readById(loggedInUserDetails?.id, collection.USERS)
       .subscribe({
         next: (resp) => {
-          this.storageService.set(storage.IS_LOGGED_IN, JSON.stringify(resp));
+          // this.storageService.set(storage.IS_LOGGED_IN, JSON.stringify(resp));
           this.closeModal.next(payload);
         },
       });

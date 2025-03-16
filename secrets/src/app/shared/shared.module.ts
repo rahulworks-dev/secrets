@@ -17,25 +17,31 @@ import { AutofocusDirective } from '../directives/autofocus.directive';
 import { CommonInputComponent } from './components/common-input/common-input.component';
 import { SortingAndFilterComponent } from './components/sorting-and-filter/sorting-and-filter.component';
 import { BulkActionTabComponent } from './components/bulk-action-tab/bulk-action-tab.component';
+import { AlertBoxComponent } from './components/alert-box/alert-box.component';
+import { AvatarComponent } from './components/avatar/avatar.component';
+
+const COMPONENTS = [
+  HeaderComponent,
+  SecretCardsComponent,
+  CreateFolderModalComponent,
+  FoldersComponent,
+  SelectColorModalComponent,
+  ShowUserIdComponent,
+  ForgotPasswordModalComponent,
+  BottomTabComponent,
+  DesktopSidebarComponent,
+  ShareComponent,
+  CommonInputComponent,
+  SortingAndFilterComponent,
+  BulkActionTabComponent,
+  AlertBoxComponent,
+  AvatarComponent,
+  // Directives
+  AutofocusDirective,
+];
 
 @NgModule({
-  declarations: [
-    HeaderComponent,
-    SecretCardsComponent,
-    CreateFolderModalComponent,
-    FoldersComponent,
-    SelectColorModalComponent,
-    ShowUserIdComponent,
-    ForgotPasswordModalComponent,
-    BottomTabComponent,
-    DesktopSidebarComponent,
-    ShareComponent,
-    CommonInputComponent,
-    SortingAndFilterComponent,
-    BulkActionTabComponent,
-    // Directives
-    AutofocusDirective,
-  ],
+  declarations: [...COMPONENTS],
   imports: [
     CommonModule,
     IonicModule,
@@ -43,22 +49,6 @@ import { BulkActionTabComponent } from './components/bulk-action-tab/bulk-action
     RouterModule,
     ReactiveFormsModule,
   ],
-  exports: [
-    HeaderComponent,
-    SecretCardsComponent,
-    CreateFolderModalComponent,
-    FoldersComponent,
-    SelectColorModalComponent,
-    ShowUserIdComponent,
-    ForgotPasswordModalComponent,
-    BottomTabComponent,
-    DesktopSidebarComponent,
-    ShareComponent,
-    CommonInputComponent,
-    SortingAndFilterComponent,
-    BulkActionTabComponent,
-    // Directives
-    AutofocusDirective,
-  ],
+  exports: [...COMPONENTS],
 })
 export class SharedModule {}

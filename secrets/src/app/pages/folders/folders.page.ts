@@ -56,9 +56,8 @@ export class FoldersPage {
     this.fetchFolders();
   }
 
-  async getLoggedInUserDetails() {
-    this.loggedInUserDetails =
-      await this.helperService.getLoggedInUserDetails();
+  getLoggedInUserDetails() {
+    this.loggedInUserDetails = this.helperService.getLoggedInUserDetails();
   }
 
   readActionFromURL() {
@@ -72,37 +71,33 @@ export class FoldersPage {
 
   async fetchFolders() {
     this.loaderService.show();
-    this.intermediateService.readAll(collection.FOLDERS, '').subscribe({
-      next: (resp) => {
-        this.folders = [];
-        this.isAPIError = false;
-        this.noFolderText = '';
-        this.loaderService.hide();
-        if (resp?.length > 0) {
-          this.allAvailableFolders = resp;
-          this.folders =
-            this.allAvailableFolders?.filter(
-              (item: any) => item?.userId == this.loggedInUserDetails?.id
-            ) || [];
-          this.duplicateFolders = this.folders;
-
-          // if (this.activeTabFromURL === 'myFolders') {
-          //   if (this.folders?.length == 0) {
-          //     this.noFolderText = messages.NO_FOLDERS;
-          //   }
-          // } else {
-          // }
-          this.onFolderType(this.activeTabFromURL);
-        } else {
-          this.noFolderText = messages.NO_FOLDERS;
-        }
-      },
-      error: (e) => {
-        this.loaderService.hide();
-        this.isAPIError = true;
-        this.noFolderText = messages.API_ERROR_MESSAGE;
-      },
-    });
+    const subscription = this.intermediateService
+      .readAll(collection.FOLDERS, '')
+      .subscribe({
+        next: (resp) => {
+          this.folders = [];
+          this.isAPIError = false;
+          this.noFolderText = '';
+          this.loaderService.hide();
+          if (resp?.length > 0) {
+            this.allAvailableFolders = resp;
+            this.folders =
+              this.allAvailableFolders?.filter(
+                (item: any) => item?.userId == this.loggedInUserDetails?.id
+              ) || [];
+            this.duplicateFolders = this.folders;
+            this.onFolderType(this.activeTabFromURL);
+            subscription.unsubscribe();
+          } else {
+            this.noFolderText = messages.NO_FOLDERS;
+          }
+        },
+        error: (e) => {
+          this.loaderService.hide();
+          this.isAPIError = true;
+          this.noFolderText = messages.API_ERROR_MESSAGE;
+        },
+      });
   }
 
   onFolderType(folderType: any) {
@@ -112,8 +107,10 @@ export class FoldersPage {
     }
     this.activeFolderType = folderType;
     if (this.activeFolderType === 'myFolders') {
-      if(!this.action){
-        this.router.navigateByUrl('/folders?tab=myFolders', { replaceUrl: true });
+      if (!this.action) {
+        this.router.navigateByUrl('/folders?tab=myFolders', {
+          replaceUrl: true,
+        });
       }
       this.folders = this.duplicateFolders;
       this.isShared = false;

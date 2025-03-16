@@ -42,8 +42,8 @@ export class HeaderComponent implements OnInit {
 
   ionViewDidEnter() {}
 
-  async GoToDashboard() {
-    const isLoggedIn = await this.helperService.getLoggedInUserDetails();
+  GoToDashboard() {
+    const isLoggedIn = this.helperService.getLoggedInUserDetails();
     if (isLoggedIn) {
       this.router.navigateByUrl('/dashboard');
     } else {
@@ -69,12 +69,14 @@ export class HeaderComponent implements OnInit {
     }
   }
 
-  async fetchNotifications() {
-    const isLoggedIn = await this.helperService.getLoggedInUserDetails();
+  fetchNotifications() {
+    const isLoggedIn = this.helperService.getLoggedInUserDetails();
     this.intermediateService.readAll(collection.NOTIFICATIONS, '').subscribe({
       next: (resp) => {
         const loggedInUserNotifications =
-          resp?.filter((item: any) => item?.recipientId == isLoggedIn.id && !item?.isRead) || [];
+          resp?.filter(
+            (item: any) => item?.recipientId == isLoggedIn.id && !item?.isRead
+          ) || [];
         this.activateNotification = loggedInUserNotifications?.length > 0;
       },
     });

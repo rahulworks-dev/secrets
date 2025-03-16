@@ -46,12 +46,10 @@ export class ShareComponent implements OnInit {
     this.presentingElement = document.querySelector('.dashboard');
   }
 
-  async fetchLoggedInUserDetails() {
-    this.loggedInUserDetails =
-      await this.helperService.getLoggedInUserDetails();
+  fetchLoggedInUserDetails() {
+    this.loggedInUserDetails = this.helperService.getLoggedInUserDetails();
     this.firebaseHandlerService.readAll(collection.USERS).subscribe({
       next: (resp) => {
-        console.log(resp);
         if (resp?.length > 0) {
           this.allUsers = resp?.filter(
             (item: any) => item?.id !== this.loggedInUserDetails?.id
@@ -79,8 +77,10 @@ export class ShareComponent implements OnInit {
       return;
     }
 
-    this.filteredUsers = this.allUsers.filter((user: any) =>
-      user?.username?.toLowerCase().startsWith(enteredUsername)
+    this.filteredUsers = this.allUsers.filter(
+      (user: any) =>
+        user?.email?.toLowerCase().startsWith(enteredUsername) ||
+        user?.fullname.toLowerCase().startsWith(enteredUsername)
     );
     this.noResultsFound = this.filteredUsers.length === 0;
   }
@@ -125,8 +125,7 @@ export class ShareComponent implements OnInit {
       } else {
         this.shareTo.push({
           fullname: user?.fullname,
-          username: user?.username,
-          avatar: user?.avatar,
+          photoURL: user?.photoURL,
           id: user?.id,
         });
       }
@@ -139,13 +138,13 @@ export class ShareComponent implements OnInit {
 
   share() {
     const notifyUsers = this.shareTo;
-    let grantedUsers: any = this.shareTo.map((item: any) => item?.fullname);
-    grantedUsers =
-      grantedUsers?.length > 2
-        ? grantedUsers.slice(0, -1).join(', ') + ' & ' + grantedUsers.slice(-1)
-        : grantedUsers?.length == 2
-        ? grantedUsers.join(' & ')
-        : grantedUsers;
+    // let grantedUsers: any = this.shareTo.map((item: any) => item?.fullname);
+    // grantedUsers =
+    //   grantedUsers?.length > 2
+    //     ? grantedUsers.slice(0, -1).join(', ') + ' & ' + grantedUsers.slice(-1)
+    //     : grantedUsers?.length == 2
+    //     ? grantedUsers.join(' & ')
+    //     : grantedUsers;
 
     const payload = {
       sharedTo: this.selectedFolder?.sharedTo
@@ -159,7 +158,7 @@ export class ShareComponent implements OnInit {
         next: (resp) => {
           console.log(this.shareTo);
           this.toast.showInfoToast(
-            'Successfully granted access to ' + grantedUsers
+            'Successfully granted access to selected users'
           );
           this.notifyUser(notifyUsers);
           this.setModalOpenToFalse.next(true);
@@ -174,6 +173,7 @@ export class ShareComponent implements OnInit {
     }
 
     const sharedUsers: Notification[] = sharedTo.map((user: any) => ({
+      photoURL: this.loggedInUserDetails.photoURL,
       recipientId: user.id,
       senderId: this.loggedInUserDetails.id,
       folderId: this.selectedFolder?.id,

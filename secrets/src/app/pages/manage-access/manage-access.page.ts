@@ -105,7 +105,7 @@ export class ManageAccessPage implements OnInit {
   async showRemoveAlert(user: any) {
     const alert = await this.alertCtrl.create({
       header: 'Revoke Access',
-      message: `Are you sure you want to revoke access for ${user?.username}?`,
+      message: `Are you sure you want to revoke access for ${user?.fullname}?`,
       cssClass: 'custom-alert',
       buttons: [
         {
